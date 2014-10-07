@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.12.+'
+    }
+}
+apply plugin: 'com.android.application'
+
+repositories {
+    mavenCentral()
+}
+
+android {
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
+
+    defaultConfig {
+        applicationId "io.dp.weather.app"
+        minSdkVersion 9
+        targetSdkVersion 20
+        versionCode 1
+        versionName "1.0"
+
+        buildConfigField "String", "FORECAST_API_URL",
+                         "\"https://api.forecast.io/forecast/9eb30673ab627869f9ca5b09dc3e6666\""
+    }
+
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:20.0.0'
+
+    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
+    compile 'com.squareup.retrofit:retrofit:1.6.1'
+    compile 'com.squareup.dagger:dagger:1.2.2'
+    compile 'com.squareup.dagger:dagger-compiler:1.2.2'
+    compile 'com.jakewharton:butterknife:5.1.+'
+    compile 'com.squareup.picasso:picasso:2.3.4'
+    compile 'com.netflix.rxjava:rxjava-android:0.20.4'
+    compile 'com.squareup:otto:1.3.5'
+    compile 'com.jakewharton.timber:timber:2.4.1'
+    compile 'com.etsy.android.grid:library:1.0.5'
+}
