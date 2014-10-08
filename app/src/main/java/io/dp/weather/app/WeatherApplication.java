@@ -21,8 +21,15 @@ public class WeatherApplication extends Application {
 
     appModule = new AppModule(this);
 
-    objectGraph = ObjectGraph.create(getModules().toArray());
+    createObjectGraph();
+  }
 
+  public void setObjectGraph(ObjectGraph objectGraph) {
+    this.objectGraph = objectGraph;
+  }
+
+  protected void createObjectGraph() {
+    setObjectGraph(ObjectGraph.create(getModules().toArray()));
   }
 
   public AppModule getAppModule() {

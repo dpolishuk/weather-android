@@ -68,18 +68,18 @@ public class AppModule {
   }
 
   private void strictMode() {
-    if (BuildConfig.DEBUG) {
-      Picasso.with(application).setLoggingEnabled(true);
-
-      Timber.d("Strict mode is enabled");
-      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                                     .detectAll()
-                                     .penaltyLog()
-                                     .build());
-      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                                 .detectAll()
-                                 .penaltyLog()
-                                 .build());
-    }
+//    if (BuildConfig.DEBUG) {
+//      Picasso.with(application).setLoggingEnabled(true);
+//
+//      Timber.d("Strict mode is enabled");
+//      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+//                                     .detectAll()
+//                                     .penaltyLog()
+//                                     .build());
+//      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+//                                 .detectAll()
+//                                 .penaltyLog()
+//                                 .build());
+//    }
   }
 }
