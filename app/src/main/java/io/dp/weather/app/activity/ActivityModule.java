@@ -5,6 +5,7 @@ import android.app.Activity;
 import dagger.Module;
 import dagger.Provides;
 import io.dp.weather.app.AppModule;
+import io.dp.weather.app.fragment.WeatherFragment;
 
 /**
  * Created by dp on 07/10/14.
@@ -13,6 +14,7 @@ import io.dp.weather.app.AppModule;
 @Module(
     injects = {
         MainActivity.class,
+        WeatherFragment.class
     },
     addsTo = AppModule.class,
     library = true)

@@ -10,7 +10,7 @@ import io.dp.weather.app.WeatherApplication;
 /**
  * Created by dp on 07/10/14.
  */
-public class BaseActivity extends SherlockFragmentActivity {
+public abstract class BaseActivity extends SherlockFragmentActivity {
 
   private ObjectGraph activityGraph;
   private ActivityModule activityModule;
@@ -25,5 +25,11 @@ public class BaseActivity extends SherlockFragmentActivity {
     activityGraph.inject(this);
 
     super.onCreate(savedInstanceState);
+  }
+
+  public void inject(Object object) {
+    if (activityGraph != null) {
+      activityGraph.inject(object);
+    }
   }
 }
