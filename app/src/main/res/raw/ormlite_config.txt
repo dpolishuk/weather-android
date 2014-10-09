@@ -1,0 +1,19 @@
+# --table-start--
+dataClass=io.dp.weather.app.db.table.City
+tableName=cities
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=name
+# --field-end--
+# --field-start--
+fieldName=lat
+# --field-end--
+# --field-start--
+fieldName=lon
+# --field-end--
+# --table-fields-end--
+# --table-end--

@@ -4,9 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import android.app.Application;
-import android.os.StrictMode;
-
-import com.squareup.picasso.Picasso;
 
 import javax.inject.Singleton;
 
@@ -51,7 +48,7 @@ public class AppModule {
     b.setRequestInterceptor(new RequestInterceptor() {
       @Override
       public void intercept(RequestFacade request) {
-        request.addQueryParam("key", "499cb12ae4fc7740adee2fa7b2007982f75338c0");
+        request.addQueryParam("key", BuildConfig.FORECAST_API_KEY);
         request.addQueryParam("format", "json");
       }
     });

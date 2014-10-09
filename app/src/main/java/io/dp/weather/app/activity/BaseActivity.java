@@ -32,4 +32,13 @@ public abstract class BaseActivity extends SherlockFragmentActivity {
       activityGraph.inject(object);
     }
   }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+
+    if (activityModule != null) {
+      activityModule.releaseDatabaseHelper();
+    }
+  }
 }

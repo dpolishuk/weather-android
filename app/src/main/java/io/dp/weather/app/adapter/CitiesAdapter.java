@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.text.TextUtils;
@@ -12,7 +13,6 @@ import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,6 +29,8 @@ import butterknife.InjectView;
 import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.WeatherIconUrl;
+import io.dp.weather.app.db.OrmliteCursorAdapter;
+import io.dp.weather.app.db.table.City;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.CurrentCondition;
 import io.dp.weather.app.net.dto.Forecast;
@@ -45,19 +47,19 @@ import timber.log.Timber;
 /**
  * Created by dp on 08/10/14.
  */
-public class CitiesAdapter extends ArrayAdapter<CitiesAdapter.City> {
+public class CitiesAdapter extends OrmliteCursorAdapter<City> {
 
-  Activity activity;
-  Gson gson;
-  Geocoder geocoder;
-  WeatherApi api;
+  private final Activity activity;
+  private final Gson gson;
+  private final Geocoder geocoder;
+  private final WeatherApi api;
 
-  LayoutInflater inflater;
-  SharedPreferences prefs;
+  private final LayoutInflater inflater;
+  private final SharedPreferences prefs;
 
   @Inject
   public CitiesAdapter(Activity activity, Gson gson, WeatherApi api) {
-    super(activity, R.layout.item_city_weather);
+    super(activity, null, null);
 
     this.activity = activity;
     this.inflater = LayoutInflater.from(activity);
@@ -67,20 +69,26 @@ public class CitiesAdapter extends ArrayAdapter<CitiesAdapter.City> {
     this.prefs = activity.getPreferences(Context.MODE_PRIVATE);
   }
 
-  @Override
-  public View getView(int pos, View convertView, ViewGroup parent) {
-    if (convertView == null) {
-      convertView = inflater.inflate(R.layout.item_city_weather, parent, false);
-      ViewHolder holder = new ViewHolder(convertView);
-      convertView.setTag(holder);
-    }
+  public void clear() {
+    this.prefs.edit().clear().apply();
+  }
 
+  @Override
+  public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+    View v = this.inflater.inflate(R.layout.item_city_weather, viewGroup, false);
+    ViewHolder holder = new ViewHolder(v);
+    v.setTag(holder);
+    return v;
+  }
+
+  @Override
+  public void bindView(View itemView, Context context, City city) {
     boolean useCelcius = prefs.getBoolean(Const.USE_CELCIUS, true);
 
-    ViewHolder holder = (ViewHolder) convertView.getTag();
-    City city = getItem(pos);
-    final String name = city.name;
-    holder.cityName.setText(city.name);
+    ViewHolder holder = (ViewHolder) itemView.getTag();
+
+    final String name = city.getName();
+    holder.cityName.setText(name);
     holder.temperatureView.setText("");
 
     long lastRequestTime = prefs.getLong(name + "_time", -1);
@@ -106,8 +114,10 @@ public class CitiesAdapter extends ArrayAdapter<CitiesAdapter.City> {
                 @Override
                 public void call(Subscriber<? super List<Address>> subscriber) {
                   try {
-                    List<Address> addresses = geocoder.getFromLocationName(name, 1);
-                    subscriber.onNext(addresses);
+                    synchronized (geocoder) {
+                      List<Address> addresses = geocoder.getFromLocationName(name, 1);
+                      subscriber.onNext(addresses);
+                    }
                   } catch (IOException e) {
                     e.printStackTrace();
                     subscriber.onError(e);
@@ -188,21 +198,6 @@ public class CitiesAdapter extends ArrayAdapter<CitiesAdapter.City> {
       holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), useCelcius);
       Timber.v("Got raw forecast: " + f);
     }
-
-    return convertView;
-  }
-
-  public static class City {
-
-    public City(String name, float lat, float lon) {
-      this.name = name;
-      this.lat = lat;
-      this.lon = lon;
-    }
-
-    public String name;
-    public float lat;
-    public float lon;
   }
 
   static class ViewHolder {

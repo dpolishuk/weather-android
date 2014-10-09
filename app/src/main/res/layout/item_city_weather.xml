@@ -2,7 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="150dip"
-                android:layout_height="300dip"
+                android:layout_height="200dip"
                 android:orientation="vertical"
                 android:background="@drawable/card">
 
