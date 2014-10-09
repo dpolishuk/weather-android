@@ -4,12 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import android.app.Application;
+import android.os.StrictMode;
+
+import com.squareup.otto.Bus;
+import com.squareup.otto.ThreadEnforcer;
+import com.squareup.picasso.Picasso;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 import io.dp.weather.app.net.WeatherApi;
+import io.dp.weather.app.utils.AsyncBus;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import timber.log.Timber;
@@ -64,19 +70,25 @@ public class AppModule {
     return new GsonBuilder().create();
   }
 
+  @Provides
+  @Singleton
+  public Bus provideBus() {
+    return new AsyncBus(ThreadEnforcer.ANY);
+  }
+
   private void strictMode() {
-//    if (BuildConfig.DEBUG) {
-//      Picasso.with(application).setLoggingEnabled(true);
-//
-//      Timber.d("Strict mode is enabled");
-//      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-//                                     .detectAll()
-//                                     .penaltyLog()
-//                                     .build());
-//      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-//                                 .detectAll()
-//                                 .penaltyLog()
-//                                 .build());
-//    }
+    if (BuildConfig.DEBUG) {
+      Picasso.with(application).setLoggingEnabled(true);
+
+      Timber.d("Strict mode is enabled");
+      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                                     .detectAll()
+                                     .penaltyLog()
+                                     .build());
+      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                                 .detectAll()
+                                 .penaltyLog()
+                                 .build());
+    }
   }
 }

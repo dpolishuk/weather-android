@@ -8,15 +8,19 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
+import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -31,6 +35,7 @@ import io.dp.weather.app.R;
 import io.dp.weather.app.WeatherIconUrl;
 import io.dp.weather.app.db.OrmliteCursorAdapter;
 import io.dp.weather.app.db.table.City;
+import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.CurrentCondition;
 import io.dp.weather.app.net.dto.Forecast;
@@ -57,8 +62,12 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
   private final LayoutInflater inflater;
   private final SharedPreferences prefs;
 
+  private final Bus bus;
+
+  private final LruCache<Long, Forecast> cache = new LruCache<Long, Forecast>(16);
+
   @Inject
-  public CitiesAdapter(Activity activity, Gson gson, WeatherApi api) {
+  public CitiesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus) {
     super(activity, null, null);
 
     this.activity = activity;
@@ -67,6 +76,7 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
     this.geocoder = new Geocoder(activity);
     this.api = api;
     this.prefs = activity.getPreferences(Context.MODE_PRIVATE);
+    this.bus = bus;
   }
 
   public void clear() {
@@ -91,6 +101,27 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
     holder.cityName.setText(name);
     holder.temperatureView.setText("");
 
+    holder.menuView.setTag(city.getId());
+    holder.menuView.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        final Long id = (Long) v.getTag();
+
+        PopupMenu popupMenu = new PopupMenu(activity, v);
+        popupMenu.inflate(R.menu.item_place);
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+          @Override
+          public boolean onMenuItemClick(MenuItem item) {
+            bus.post(new DeletePlaceEvent(id));
+            return true;
+          }
+        });
+
+        popupMenu.show();
+      }
+    });
+
     long lastRequestTime = prefs.getLong(name + "_time", -1);
     Timber.v("Last request time for " + name + " was " + lastRequestTime);
     if (lastRequestTime == -1 || (lastRequestTime > 0
@@ -100,6 +131,7 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
 
       holder.progressView.setVisibility(View.VISIBLE);
       holder.contentView.setVisibility(View.GONE);
+
 
       String rawForecast = prefs.getString(name, null);
 
@@ -166,8 +198,13 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
       holder.progressView.setVisibility(View.GONE);
       holder.contentView.setVisibility(View.VISIBLE);
 
-      String rawForecast = prefs.getString(name, null);
-      Forecast f = gson.fromJson(rawForecast, Forecast.class);
+      Forecast f = cache.get(city.getId());
+      if (f == null) {
+        String rawForecast = prefs.getString(name, null);
+        f = gson.fromJson(rawForecast, Forecast.class);
+        cache.put(city.getId(), f);
+      }
+
       List<CurrentCondition> conditions = f.getData().getCurrentCondition();
       if (conditions != null && conditions.size() > 0) {
         CurrentCondition condition = conditions.get(0);
@@ -196,7 +233,6 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
       }
 
       holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), useCelcius);
-      Timber.v("Got raw forecast: " + f);
     }
   }
 
@@ -222,6 +258,9 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
 
     @InjectView(R.id.content)
     View contentView;
+
+    @InjectView(R.id.menu)
+    View menuView;
 
     ViewHolder(View view) {
       ButterKnife.inject(this, view);

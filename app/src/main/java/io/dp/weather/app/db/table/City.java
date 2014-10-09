@@ -37,6 +37,10 @@ public class City {
     this.lon = lon;
   }
 
+  public long getId() {
+    return id;
+  }
+
   public String getName() {
     return name;
   }

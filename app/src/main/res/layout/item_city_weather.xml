@@ -2,15 +2,25 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="150dip"
-                android:layout_height="200dip"
+                android:layout_height="300dip"
                 android:orientation="vertical"
-                android:background="@drawable/card">
+                android:background="@drawable/card"
+                android:descendantFocusability="blocksDescendants">
+
+    <Button
+            android:id="@+id/menu"
+            android:layout_width="30dip"
+            android:layout_height="30dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/ico_menu_small"/>
 
     <TextView android:id="@+id/city_name"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_alignParentBottom="true"
               android:layout_alignParentLeft="true"
+              android:layout_toLeftOf="@id/menu"
               android:textSize="18sp"
               android:textStyle="bold"
               android:text="London"
@@ -76,6 +86,7 @@
     <ProgressBar android:id="@+id/progress"
                  android:layout_width="50dip"
                  android:layout_height="50dip"
-                 android:layout_centerInParent="true"/>
+                 android:layout_centerHorizontal="true"
+                 android:layout_above="@id/divider"/>
 
 </RelativeLayout>

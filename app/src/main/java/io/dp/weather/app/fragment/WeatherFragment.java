@@ -18,6 +18,8 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.etsy.android.grid.StaggeredGridView;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,7 +36,13 @@ import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.OrmliteCursorLoader;
 import io.dp.weather.app.db.Queries;
 import io.dp.weather.app.db.table.City;
+import io.dp.weather.app.event.DeletePlaceEvent;
+import rx.Observable;
+import rx.Subscriber;
 import rx.Subscription;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by dp on 08/10/14.
@@ -49,6 +57,9 @@ public class WeatherFragment extends BaseFragment
 
   @Inject
   DatabaseHelper dbHelper;
+
+  @Inject
+  Bus bus;
 
   @InjectView(R.id.grid)
   StaggeredGridView gridView;
@@ -83,6 +94,18 @@ public class WeatherFragment extends BaseFragment
   }
 
   @Override
+  public void onResume() {
+    super.onResume();
+    bus.register(this);
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+    bus.unregister(this);
+  }
+
+  @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
 
@@ -108,7 +131,7 @@ public class WeatherFragment extends BaseFragment
 
       @Override
       public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-        return false;
+        return true;
       }
     });
 
@@ -120,10 +143,46 @@ public class WeatherFragment extends BaseFragment
     addView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        String str = (String) parent.getItemAtPosition(position);
+        final String str = (String) parent.getItemAtPosition(position);
         Toast.makeText(getActivity(), str, Toast.LENGTH_SHORT).show();
         addItem.collapseActionView();
         addView.setText("");
+
+        Subscription s = AndroidObservable.bindActivity(getActivity(), Observable.create(
+            new Observable.OnSubscribe<Void>() {
+              @Override
+              public void call(Subscriber<? super Void> subscriber) {
+                try {
+                  dbHelper.getCityDao().create(new City(str, 0, 0));
+                  subscriber.onNext(null);
+                } catch (SQLException e) {
+                  e.printStackTrace();
+                  subscriber.onError(e);
+                } finally {
+                  subscriber.onCompleted();
+                }
+
+              }
+            })).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
+            new Subscriber<Void>() {
+              @Override
+              public void onCompleted() {
+
+              }
+
+              @Override
+              public void onError(Throwable e) {
+
+              }
+
+              @Override
+              public void onNext(Void aVoid) {
+
+                getLoaderManager().restartLoader(0, null, WeatherFragment.this);
+              }
+            });
+
+        subscriptionList.add(s);
       }
     });
   }
@@ -178,5 +237,17 @@ public class WeatherFragment extends BaseFragment
     adapter.clear();
     adapter.notifyDataSetChanged();
     swipeRefreshView.setRefreshing(false);
+  }
+
+  @Subscribe
+  public void onDeletePlace(DeletePlaceEvent event) {
+    if (event.getId() != null) {
+      try {
+        dbHelper.getCityDao().deleteById(event.getId());
+        getLoaderManager().restartLoader(0, null, this);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
   }
 }
