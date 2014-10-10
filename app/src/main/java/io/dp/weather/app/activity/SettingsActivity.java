@@ -39,6 +39,7 @@ public class SettingsActivity extends PreferenceActivity {
    * Shows the simplified settings UI if the device configuration if the device configuration
    * dictates that a simplified, single-pane UI should be shown.
    */
+  @SuppressWarnings("deprecation")
   private void setupSimplePreferencesScreen() {
     if (!isSimplePreferences(this)) {
       return;
