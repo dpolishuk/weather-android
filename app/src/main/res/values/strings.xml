@@ -11,5 +11,15 @@
     <string name="something_went_wrong_with_adding_new_location">Something went wrong with adding
         new location
     </string>
+    <string name="title_wind">wind</string>
+    <string name="title_pressure">pressure</string>
+    <string name="title_humidity">humidity</string>
+    <string name="undef">undef</string>
+    <string name="fmt_windspeed_kmph">%1$s kmph</string>
+    <string name="fmt_windspeed_mph">%1$s mph</string>
+    <string name="fmt_pressure_mmhg">%1$d mmHg</string>
+    <string name="fmt_pressure_kpa">%1$d kPa</string>
+    <string name="celcius">C˚</string>
+    <string name="fahrenheit">F˚</string>
 
 </resources>

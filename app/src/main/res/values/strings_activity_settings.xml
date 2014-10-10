@@ -6,4 +6,10 @@
     <string name="pref_title_temperature">Temperature units</string>
     <string name="pref_description_temperature_units">Celsius - ON, Fahrenheit - OFF</string>
 
+    <string name="pref_title_pressure">Pressure units</string>
+    <string name="pref_description_pressure_units">kPa - ON, mmHg - OFF</string>
+
+    <string name="pref_title_wind">Wind units</string>
+    <string name="pref_description_wind_units">mph - ON, kmph - OFF</string>
+
 </resources>

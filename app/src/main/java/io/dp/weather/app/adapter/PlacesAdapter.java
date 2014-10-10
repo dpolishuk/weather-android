@@ -38,6 +38,7 @@ import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.CurrentCondition;
 import io.dp.weather.app.net.dto.Forecast;
 import io.dp.weather.app.net.dto.WeatherDesc;
+import io.dp.weather.app.utils.WhiteBorderCircleTransformation;
 import io.dp.weather.app.widget.WeatherFor5DaysView;
 import rx.Scheduler;
 import rx.Subscriber;
@@ -62,6 +63,8 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
   private final Scheduler uiScheduler;
   private final Scheduler ioScheduler;
+
+  private final WhiteBorderCircleTransformation transformation = new WhiteBorderCircleTransformation();
 
   @Inject
   public PlacesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus,
@@ -94,7 +97,9 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
   @Override
   public void bindView(View itemView, Context context, final Place place) {
-    boolean useCelcius = prefs.getBoolean(Const.USE_CELCIUS, true);
+    boolean useCelcius = prefs.getBoolean(Const.USE_CELCIUS, false);
+    boolean useKmph = prefs.getBoolean(Const.USE_KMPH, false);
+    boolean useMmhg = prefs.getBoolean(Const.USE_MMHG, false);
 
     ViewHolder holder = (ViewHolder) itemView.getTag();
 
@@ -103,36 +108,18 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     holder.temperatureView.setText("");
 
     holder.menuView.setTag(place.getId());
-    holder.menuView.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        final Long id = (Long) v.getTag();
-
-        PopupMenu popupMenu = new PopupMenu(activity, v);
-        popupMenu.inflate(R.menu.item_place);
-
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-          @Override
-          public boolean onMenuItemClick(MenuItem item) {
-            bus.post(new DeletePlaceEvent(id));
-            return true;
-          }
-        });
-
-        popupMenu.show();
-      }
-    });
+    holder.menuView.setOnClickListener(popupOnClickListener);
 
     if (useCelcius) {
-      holder.degreeTypeView.setText(Const.CELCIUS);
+      holder.degreeTypeView.setText(R.string.celcius);
     } else {
-      holder.degreeTypeView.setText(Const.FAHRENHEIT);
+      holder.degreeTypeView.setText(R.string.fahrenheit);
     }
 
     long lastRequestTime = prefs.getLong(hash + "_time", -1);
-    if (lastRequestTime == -1 || (lastRequestTime > 0
-                                  && (System.currentTimeMillis() - lastRequestTime)
-                                     > DateUtils.DAY_IN_MILLIS)) {
+    if (lastRequestTime == -1 ||
+        (lastRequestTime > 0 &&
+         (System.currentTimeMillis() - lastRequestTime) > DateUtils.DAY_IN_MILLIS)) {
       Timber.v("Tryting to get forecast for " + hash);
 
       holder.progressView.setVisibility(View.VISIBLE);
@@ -166,6 +153,30 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
       if (conditions != null && conditions.size() > 0) {
         CurrentCondition condition = conditions.get(0);
 
+        holder.humidityView.setText(condition.getHumidity() + "%");
+
+        try {
+          int pressure = Integer.valueOf(condition.getPressure());
+
+          if (useMmhg) {
+            holder.pressureView.setText(context.getString(R.string.fmt_pressure_mmhg, (int) (pressure * Const.CONVERT_MMHG)));
+          } else {
+            holder.pressureView.setText(context.getString(R.string.fmt_pressure_kpa, pressure));
+          }
+        } catch (NumberFormatException e) {
+          holder.pressureView.setText(R.string.undef);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(condition.getWinddir16Point()).append(", ");
+        if (useKmph) {
+          sb.append(context.getString(R.string.fmt_windspeed_kmph, condition.getWindspeedKmph()));
+        } else {
+          sb.append(context.getString(R.string.fmt_windspeed_mph, condition.getWindspeedMiles()));
+        }
+
+        holder.windView.setText(sb.toString());
+
         List<WeatherDesc> descList = condition.getWeatherDesc();
         if (descList != null && descList.size() > 0) {
           String description = descList.get(0).getValue();
@@ -182,12 +193,13 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
         if (urls != null && urls.size() > 0) {
           String url = urls.get(0).getValue();
-          Picasso.with(activity).load(!TextUtils.isEmpty(url) ? url : null).into(
-              holder.weatherState);
+          Picasso.with(activity).load(!TextUtils.isEmpty(url) ? url : null)
+              .transform(transformation)
+              .into(holder.weatherState);
         }
       }
 
-      holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), useCelcius);
+      holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), useCelcius, transformation);
     }
   }
 
@@ -216,14 +228,38 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     }
   }
 
+  View.OnClickListener popupOnClickListener = new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+      final Long id = (Long) v.getTag();
+
+      PopupMenu popupMenu = new PopupMenu(activity, v);
+      popupMenu.inflate(R.menu.item_place);
+
+      popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+        @Override
+        public boolean onMenuItemClick(MenuItem item) {
+          bus.post(new DeletePlaceEvent(id));
+          return true;
+        }
+      });
+
+      popupMenu.show();
+    }
+  };
+
+
   static class ViewHolder {
 
     @InjectView(R.id.weather_state)
     ImageView weatherState;
+
     @InjectView(R.id.city_name)
     TextView cityName;
+
     @InjectView(R.id.weather_for_week)
     WeatherFor5DaysView weatherFor5DaysView;
+
     @InjectView(R.id.temperature)
     TextView temperatureView;
 
@@ -241,6 +277,15 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
     @InjectView(R.id.menu)
     View menuView;
+
+    @InjectView(R.id.humidity)
+    TextView humidityView;
+
+    @InjectView(R.id.pressure)
+    TextView pressureView;
+
+    @InjectView(R.id.wind)
+    TextView windView;
 
     ViewHolder(View view) {
       ButterKnife.inject(this, view);

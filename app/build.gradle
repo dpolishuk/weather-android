@@ -36,10 +36,21 @@ android {
         buildConfigField "String", "PLACES_API_KEY", "\"AIzaSyA0o8WdYc40tWfRrKimdAWHvaFwW8h-N8w\""
     }
 
+    signingConfigs {
+        release {
+            storeFile file("my-release-key.keystore")
+            storePassword "12345678"
+            keyAlias "alias_name"
+            keyPassword "12345678"
+        }
+    }
+
     buildTypes {
         release {
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            zipAlign true
         }
     }
 
@@ -52,6 +63,7 @@ android {
             setRoot('src/test')
         }
     }
+
 }
 
 robolectric {
