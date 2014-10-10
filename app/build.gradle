@@ -88,6 +88,12 @@ dependencies {
     compile 'com.j256.ormlite:ormlite-android:4.48'
 }
 
+android {
+    lintOptions {
+        abortOnError false
+    }
+}
+
 apply plugin: 'idea'
 
 idea {
