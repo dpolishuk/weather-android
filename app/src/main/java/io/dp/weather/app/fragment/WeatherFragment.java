@@ -39,6 +39,7 @@ import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.OrmliteCursorLoader;
 import io.dp.weather.app.db.Queries;
 import io.dp.weather.app.db.table.Place;
+import io.dp.weather.app.event.AddPlaceEvent;
 import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.event.UpdateListEvent;
 import io.dp.weather.app.utils.Observables;
@@ -57,6 +58,7 @@ public class WeatherFragment extends BaseFragment
 
   List<Subscription> subscriptionList = new ArrayList<Subscription>();
 
+  @Inject
   Geocoder geocoder;
 
   @Inject
@@ -102,8 +104,6 @@ public class WeatherFragment extends BaseFragment
   @Override
   public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
-
-    geocoder = new Geocoder(getActivity());
 
     adapter.setQuery(Queries.prepareCityQuery(dbHelper));
     gridView.setAdapter(adapter);
@@ -165,17 +165,11 @@ public class WeatherFragment extends BaseFragment
     addView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        final String str = (String) parent.getItemAtPosition(position);
+        final String lookupPlace = (String) parent.getItemAtPosition(position);
         addItem.collapseActionView();
         addView.setText("");
 
-        Observable<Place> o = Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, str);
-
-        Subscription s = AndroidObservable.bindActivity(getActivity(), o)
-            .observeOn(uiScheduler).subscribeOn(ioScheduler)
-            .subscribe(WeatherFragment.this);
-
-        subscriptionList.add(s);
+        bus.post(new AddPlaceEvent(lookupPlace));
       }
     });
   }
@@ -255,6 +249,19 @@ public class WeatherFragment extends BaseFragment
         e.printStackTrace();
       }
     }
+  }
+
+  @Subscribe
+  public void onAddPlace(AddPlaceEvent event) {
+    Observable<Place>
+        o =
+        Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace());
+
+    Subscription s = AndroidObservable.bindActivity(getActivity(), o)
+        .observeOn(uiScheduler).subscribeOn(ioScheduler)
+        .subscribe(WeatherFragment.this);
+
+    subscriptionList.add(s);
   }
 
   @Override

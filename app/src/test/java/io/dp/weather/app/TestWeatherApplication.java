@@ -33,4 +33,9 @@ public class TestWeatherApplication extends WeatherApplication implements TestLi
   public void afterTest(Method method) {
 
   }
+
+  @Override
+  protected boolean isTesting() {
+    return true;
+  }
 }

@@ -88,4 +88,14 @@ public class Place {
     result = 31 * result + (lon != null ? lon.hashCode() : 0);
     return result;
   }
+
+  @Override
+  public String toString() {
+    return "Place{" +
+           "id=" + id +
+           ", name='" + name + '\'' +
+           ", lat=" + lat +
+           ", lon=" + lon +
+           '}';
+  }
 }

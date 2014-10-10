@@ -1,6 +1,8 @@
 package io.dp.weather.app.activity;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 
@@ -37,6 +39,11 @@ public class ActivityModule {
   @Provides
   public DatabaseHelper provideDatabaseHelper() {
     return OpenHelperManager.getHelper(activity, DatabaseHelper.class);
+  }
+
+  @Provides
+  public SharedPreferences provideSharedPreferences() {
+    return PreferenceManager.getDefaultSharedPreferences(activity);
   }
 
   public void releaseDatabaseHelper() {

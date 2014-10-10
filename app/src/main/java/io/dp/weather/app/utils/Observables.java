@@ -49,19 +49,22 @@ public class Observables {
         return Observable.create(new Observable.OnSubscribe<Place>() {
           @Override
           public void call(Subscriber<? super Place> subscriber) {
-            Timber.v("Im here! " + addresses);
             if (addresses != null && addresses.size() > 0) {
               Address address = addresses.get(0);
               try {
+
                 Place place = new Place(lookupPlace, address.getLatitude(), address.getLongitude());
-                dbHelper.getPlaceDao().create(place);
+                synchronized (dbHelper) {
+                  dbHelper.getPlaceDao().createIfNotExists(place);
+                }
 
                 subscriber.onNext(place);
               } catch (SQLException e) {
                 Toast.makeText(context,
                                R.string.something_went_wrong_with_adding_new_location,
                                Toast.LENGTH_SHORT).show();
-                Timber.e(e, "Cannot add city");
+                Timber.e(e, "Cannot add city " + address + " lookupName: " + lookupPlace + " lat "
+                            + address.getLatitude() + " lon " + address.getLongitude());
                 subscriber.onError(e);
               } finally {
                 subscriber.onCompleted();

@@ -45,4 +45,8 @@ public class WeatherApplication extends Application {
   public ObjectGraph getApplicationGraph() {
     return objectGraph;
   }
+
+  protected boolean isTesting() {
+    return false;
+  }
 }

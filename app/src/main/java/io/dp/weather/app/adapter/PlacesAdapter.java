@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -66,6 +65,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
   @Inject
   public PlacesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus,
+                       SharedPreferences prefs,
                        @Named("uiScheduler") Scheduler uiScheduler,
                        @Named("ioScheduler") Scheduler ioScheduler) {
     super(activity, null, null);
@@ -74,7 +74,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     this.inflater = LayoutInflater.from(activity);
     this.gson = gson;
     this.api = api;
-    this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+    this.prefs = prefs;
     this.bus = bus;
     this.uiScheduler = uiScheduler;
     this.ioScheduler = ioScheduler;
@@ -123,6 +123,12 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
       }
     });
 
+    if (useCelcius) {
+      holder.degreeTypeView.setText(Const.CELCIUS);
+    } else {
+      holder.degreeTypeView.setText(Const.FAHRENHEIT);
+    }
+
     long lastRequestTime = prefs.getLong(hash + "_time", -1);
     if (lastRequestTime == -1 || (lastRequestTime > 0
                                   && (System.currentTimeMillis() - lastRequestTime)
@@ -168,10 +174,8 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
         if (useCelcius) {
           holder.temperatureView.setText(condition.getTempC());
-          holder.degreeTypeView.setText(Const.CELCIUS);
         } else {
           holder.temperatureView.setText(condition.getTempF());
-          holder.degreeTypeView.setText(Const.FAHRENHEIT);
         }
 
         List<WeatherIconUrl> urls = conditions.get(0).getWeatherIconUrl();

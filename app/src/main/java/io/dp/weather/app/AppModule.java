@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import android.app.Application;
+import android.location.Geocoder;
 import android.os.StrictMode;
 
 import com.squareup.otto.Bus;
@@ -31,14 +32,22 @@ import timber.log.Timber;
 @Module(library = true)
 public class AppModule {
 
-  private Application application;
+  protected Application application;
 
-  public AppModule(Application application) {
+  public AppModule(WeatherApplication application) {
     this.application = application;
 
     Timber.plant(new Timber.DebugTree());
 
-    strictMode();
+    if (!application.isTesting()) {
+      strictMode();
+    }
+  }
+
+  @Provides
+  @Singleton
+  public Geocoder proviceGeocoder() {
+    return new Geocoder(application);
   }
 
   @Provides
