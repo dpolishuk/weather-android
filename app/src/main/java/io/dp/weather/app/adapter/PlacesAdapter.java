@@ -6,8 +6,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.location.Address;
-import android.location.Geocoder;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -23,10 +21,10 @@ import android.widget.TextView;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -34,29 +32,25 @@ import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.WeatherIconUrl;
 import io.dp.weather.app.db.OrmliteCursorAdapter;
-import io.dp.weather.app.db.table.City;
+import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.CurrentCondition;
 import io.dp.weather.app.net.dto.Forecast;
 import io.dp.weather.app.net.dto.WeatherDesc;
 import io.dp.weather.app.widget.WeatherFor5DaysView;
-import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.observables.AndroidObservable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
  * Created by dp on 08/10/14.
  */
-public class CitiesAdapter extends OrmliteCursorAdapter<City> {
+public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
   private final Activity activity;
   private final Gson gson;
-  private final Geocoder geocoder;
   private final WeatherApi api;
 
   private final LayoutInflater inflater;
@@ -66,17 +60,23 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
 
   private final LruCache<Long, Forecast> cache = new LruCache<Long, Forecast>(16);
 
+  private final Scheduler uiScheduler;
+  private final Scheduler ioScheduler;
+
   @Inject
-  public CitiesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus) {
+  public PlacesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus,
+                       @Named("uiScheduler") Scheduler uiScheduler,
+                       @Named("ioScheduler") Scheduler ioScheduler) {
     super(activity, null, null);
 
     this.activity = activity;
     this.inflater = LayoutInflater.from(activity);
     this.gson = gson;
-    this.geocoder = new Geocoder(activity);
     this.api = api;
     this.prefs = activity.getPreferences(Context.MODE_PRIVATE);
     this.bus = bus;
+    this.uiScheduler = uiScheduler;
+    this.ioScheduler = ioScheduler;
   }
 
   public void clear() {
@@ -92,16 +92,16 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
   }
 
   @Override
-  public void bindView(View itemView, Context context, City city) {
+  public void bindView(View itemView, Context context, final Place place) {
     boolean useCelcius = prefs.getBoolean(Const.USE_CELCIUS, true);
 
     ViewHolder holder = (ViewHolder) itemView.getTag();
 
-    final String name = city.getName();
-    holder.cityName.setText(name);
+    final String hash = String.valueOf(place.hashCode());
+    holder.cityName.setText(place.getName());
     holder.temperatureView.setText("");
 
-    holder.menuView.setTag(city.getId());
+    holder.menuView.setTag(place.getId());
     holder.menuView.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -122,87 +122,38 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
       }
     });
 
-    long lastRequestTime = prefs.getLong(name + "_time", -1);
-    Timber.v("Last request time for " + name + " was " + lastRequestTime);
+    long lastRequestTime = prefs.getLong(hash + "_time", -1);
+    Timber.v("Last request time for " + hash + " was " + lastRequestTime);
     if (lastRequestTime == -1 || (lastRequestTime > 0
                                   && (System.currentTimeMillis() - lastRequestTime)
                                      > DateUtils.DAY_IN_MILLIS)) {
-      Timber.v("Tryting to get forecast for " + name);
+      Timber.v("Tryting to get forecast for " + hash);
 
       holder.progressView.setVisibility(View.VISIBLE);
       holder.contentView.setVisibility(View.GONE);
 
+      String rawForecast = prefs.getString(hash, null);
 
-      String rawForecast = prefs.getString(name, null);
-
-      if (!TextUtils.isEmpty(name)) {
-        if (!TextUtils.isEmpty(rawForecast)) {
-          Forecast f = gson.fromJson(rawForecast, Forecast.class);
-          Timber.v("!! Got forecast: " + f);
-        } else {
-
-          AndroidObservable.bindActivity(activity, Observable.create(
-              new Observable.OnSubscribe<List<Address>>() {
-                @Override
-                public void call(Subscriber<? super List<Address>> subscriber) {
-                  try {
-                    synchronized (geocoder) {
-                      List<Address> addresses = geocoder.getFromLocationName(name, 1);
-                      subscriber.onNext(addresses);
-                    }
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                    subscriber.onError(e);
-                  } finally {
-                    subscriber.onCompleted();
-                  }
-                }
-              }
-          )).flatMap(new Func1<List<Address>, Observable<Forecast>>() {
-                       @Override
-                       public Observable<Forecast> call(
-                           List<Address> addresses) {
-                         Timber.v("Got addresses: " + addresses);
-                         if (addresses != null && addresses.size() > 0) {
-                           Address address = addresses.get(0);
-                           return api.getForecast(address.getLatitude() + "," +
-                                                  address.getLongitude(), 5);
-                         }
-
-                         return null;
-                       }
-                     }
-          ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(
-              new Subscriber<Forecast>() {
-                @Override
-                public void onCompleted() {
-
-                }
-
-                @Override
-                public void onError(Throwable e) {
-
-                }
-
-                @Override
-                public void onNext(Forecast forecast) {
-                  prefs.edit().putLong(name + "_time", System.currentTimeMillis()).apply();
-                  prefs.edit().putString(name, gson.toJson(forecast))
-                      .apply();
-                  notifyDataSetChanged();
-                }
-              });
+      if (!TextUtils.isEmpty(hash)) {
+        if (TextUtils.isEmpty(rawForecast)) {
+          Double lat = place.getLat();
+          Double lon = place.getLon();
+          AndroidObservable
+              .bindActivity(activity, api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS))
+              .subscribeOn(ioScheduler)
+              .observeOn(uiScheduler)
+              .subscribe(new ForecastCacheSubscriber(hash));
         }
       }
     } else {
       holder.progressView.setVisibility(View.GONE);
       holder.contentView.setVisibility(View.VISIBLE);
 
-      Forecast f = cache.get(city.getId());
+      Forecast f = cache.get(place.getId());
       if (f == null) {
-        String rawForecast = prefs.getString(name, null);
+        String rawForecast = prefs.getString(hash, null);
         f = gson.fromJson(rawForecast, Forecast.class);
-        cache.put(city.getId(), f);
+        cache.put(place.getId(), f);
       }
 
       List<CurrentCondition> conditions = f.getData().getCurrentCondition();
@@ -217,10 +168,10 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
 
         if (useCelcius) {
           holder.temperatureView.setText(condition.getTempC());
-          holder.degreeTypeView.setText("C˚");
+          holder.degreeTypeView.setText(Const.CELCIUS);
         } else {
           holder.temperatureView.setText(condition.getTempF());
-          holder.temperatureView.setText("F˚");
+          holder.temperatureView.setText(Const.FAHRENHEIT);
         }
 
         List<WeatherIconUrl> urls = conditions.get(0).getWeatherIconUrl();
@@ -233,6 +184,31 @@ public class CitiesAdapter extends OrmliteCursorAdapter<City> {
       }
 
       holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), useCelcius);
+    }
+  }
+
+  private class ForecastCacheSubscriber extends Subscriber<Forecast> {
+
+    private String hash;
+
+    public ForecastCacheSubscriber(String hash) {
+      this.hash = hash;
+    }
+
+    @Override
+    public void onCompleted() {
+    }
+
+    @Override
+    public void onError(Throwable e) {
+    }
+
+    @Override
+    public void onNext(Forecast forecast) {
+      prefs.edit().putLong(hash + "_time", System.currentTimeMillis()).apply();
+      prefs.edit().putString(hash, gson.toJson(forecast))
+          .apply();
+      notifyDataSetChanged();
     }
   }
 

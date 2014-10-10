@@ -2,7 +2,6 @@ package io.dp.weather.app.widget;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -17,6 +16,7 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectViews;
+import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.WeatherIconUrl;
 import io.dp.weather.app.net.dto.Weather;
@@ -45,7 +45,6 @@ public class WeatherFor5DaysView extends LinearLayout {
     init(context);
   }
 
-
   private void init(Context context) {
     LayoutInflater.from(context).inflate(R.layout.view_weather_for_week, this, true);
   }
@@ -64,11 +63,12 @@ public class WeatherFor5DaysView extends LinearLayout {
       }
 
       if (useCelsius) {
-        tempViews[i].setText(String.format("%s-%sC˚", weather.getTempMinC(), weather.getTempMaxC()));
+        tempViews[i].setText(
+            String.format("%s-%s" + Const.CELCIUS, weather.getTempMinC(), weather.getTempMaxC()));
       } else {
-        tempViews[i].setText(String.format("%s-%sF˚", weather.getTempMinF(), weather.getTempMaxF()));
+        tempViews[i].setText(String.format("%s-%sF˚" + Const.FAHRENHEIT, weather.getTempMinF(),
+                                           weather.getTempMaxF()));
       }
-
 
       List<WeatherIconUrl> urls = weather.getWeatherIconUrl();
       if (urls != null && urls.size() > 0) {

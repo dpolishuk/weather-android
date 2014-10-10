@@ -2,6 +2,7 @@ package io.dp.weather.app.fragment;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -12,7 +13,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -26,40 +26,53 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import io.dp.weather.app.R;
-import io.dp.weather.app.adapter.CitiesAdapter;
+import io.dp.weather.app.adapter.PlacesAdapter;
 import io.dp.weather.app.adapter.PlacesAutoCompleteAdapter;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.OrmliteCursorLoader;
 import io.dp.weather.app.db.Queries;
-import io.dp.weather.app.db.table.City;
+import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.DeletePlaceEvent;
+import io.dp.weather.app.event.UpdateListEvent;
+import io.dp.weather.app.utils.Observables;
 import rx.Observable;
-import rx.Subscriber;
+import rx.Observer;
+import rx.Scheduler;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * Created by dp on 08/10/14.
  */
 public class WeatherFragment extends BaseFragment
-    implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+    implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener,
+               Observer<Place> {
 
   List<Subscription> subscriptionList = new ArrayList<Subscription>();
 
+  Geocoder geocoder;
+
   @Inject
-  CitiesAdapter adapter;
+  PlacesAdapter adapter;
 
   @Inject
   DatabaseHelper dbHelper;
 
   @Inject
   Bus bus;
+
+  @Inject
+  @Named("uiScheduler")
+  Scheduler uiScheduler;
+
+  @Inject
+  @Named("ioScheduler")
+  Scheduler ioScheduler;
 
   @InjectView(R.id.grid)
   StaggeredGridView gridView;
@@ -84,6 +97,8 @@ public class WeatherFragment extends BaseFragment
   @Override
   public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
+
+    geocoder = new Geocoder(getActivity());
 
     adapter.setQuery(Queries.prepareCityQuery(dbHelper));
     gridView.setAdapter(adapter);
@@ -144,43 +159,14 @@ public class WeatherFragment extends BaseFragment
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         final String str = (String) parent.getItemAtPosition(position);
-        Toast.makeText(getActivity(), str, Toast.LENGTH_SHORT).show();
         addItem.collapseActionView();
         addView.setText("");
 
-        Subscription s = AndroidObservable.bindActivity(getActivity(), Observable.create(
-            new Observable.OnSubscribe<Void>() {
-              @Override
-              public void call(Subscriber<? super Void> subscriber) {
-                try {
-                  dbHelper.getCityDao().create(new City(str, 0, 0));
-                  subscriber.onNext(null);
-                } catch (SQLException e) {
-                  e.printStackTrace();
-                  subscriber.onError(e);
-                } finally {
-                  subscriber.onCompleted();
-                }
+        Observable<Place> o = Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, str);
 
-              }
-            })).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io()).subscribe(
-            new Subscriber<Void>() {
-              @Override
-              public void onCompleted() {
-
-              }
-
-              @Override
-              public void onError(Throwable e) {
-
-              }
-
-              @Override
-              public void onNext(Void aVoid) {
-
-                getLoaderManager().restartLoader(0, null, WeatherFragment.this);
-              }
-            });
+        Subscription s = AndroidObservable.bindActivity(getActivity(), o)
+            .observeOn(uiScheduler).subscribeOn(ioScheduler)
+            .subscribe(WeatherFragment.this);
 
         subscriptionList.add(s);
       }
@@ -189,9 +175,6 @@ public class WeatherFragment extends BaseFragment
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
     if (id == R.id.action_add) {
       return true;
@@ -212,7 +195,7 @@ public class WeatherFragment extends BaseFragment
   public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
     try {
-      return new OrmliteCursorLoader<City>(getActivity(), dbHelper.getCityDao(),
+      return new OrmliteCursorLoader<Place>(getActivity(), dbHelper.getPlaceDao(),
                                            adapter.getQuery());
     } catch (SQLException e) {
       e.printStackTrace();
@@ -240,14 +223,40 @@ public class WeatherFragment extends BaseFragment
   }
 
   @Subscribe
+  public void onUpdateList(UpdateListEvent event) {
+    getLoaderManager().restartLoader(0, null, this);
+  }
+
+  @Subscribe
   public void onDeletePlace(DeletePlaceEvent event) {
     if (event.getId() != null) {
       try {
-        dbHelper.getCityDao().deleteById(event.getId());
+        dbHelper.getPlaceDao().deleteById(event.getId());
         getLoaderManager().restartLoader(0, null, this);
       } catch (SQLException e) {
         e.printStackTrace();
       }
     }
+  }
+
+  @Override
+  public void onCompleted() {
+
+  }
+
+  @Override
+  public void onError(Throwable e) {
+
+  }
+
+  @Override
+  public void onNext(Place place) {
+    gridView.post(new Runnable() {
+      @Override
+      public void run() {
+        gridView.setSelection(gridView.getCount() - 1);
+      }
+    });
+    bus.post(new UpdateListEvent());
   }
 }

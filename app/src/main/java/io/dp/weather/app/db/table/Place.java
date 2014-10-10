@@ -8,8 +8,8 @@ import com.j256.ormlite.table.DatabaseTable;
  * Created by dp on 09/10/14.
  */
 
-@DatabaseTable(tableName = "cities")
-public class City {
+@DatabaseTable(tableName = "places")
+public class Place {
 
   public static final String ID = "id";
   public static final String NAME = "name";
@@ -28,10 +28,10 @@ public class City {
   @DatabaseField(dataType = DataType.DOUBLE_OBJ, columnName = LON)
   private Double lon;
 
-  public City() {
+  public Place() {
   }
 
-  public City(String name, double lat, double lon) {
+  public Place(String name, double lat, double lon) {
     this.name = name;
     this.lat = lat;
     this.lon = lon;
@@ -51,5 +51,41 @@ public class City {
 
   public Double getLon() {
     return lon;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Place)) {
+      return false;
+    }
+
+    Place place = (Place) o;
+
+    if (id != place.id) {
+      return false;
+    }
+    if (lat != null ? !lat.equals(place.lat) : place.lat != null) {
+      return false;
+    }
+    if (lon != null ? !lon.equals(place.lon) : place.lon != null) {
+      return false;
+    }
+    if (name != null ? !name.equals(place.name) : place.name != null) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = (int) (id ^ (id >>> 32));
+    result = 31 * result + (name != null ? name.hashCode() : 0);
+    result = 31 * result + (lat != null ? lat.hashCode() : 0);
+    result = 31 * result + (lon != null ? lon.hashCode() : 0);
+    return result;
   }
 }

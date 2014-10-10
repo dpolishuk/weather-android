@@ -10,6 +10,7 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 import com.squareup.picasso.Picasso;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -18,6 +19,9 @@ import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.utils.AsyncBus;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import rx.Scheduler;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -74,6 +78,20 @@ public class AppModule {
   @Singleton
   public Bus provideBus() {
     return new AsyncBus(ThreadEnforcer.ANY);
+  }
+
+  @Provides
+  @Named("uiScheduler")
+  @Singleton
+  public Scheduler provideUiScheduler() {
+    return AndroidSchedulers.mainThread();
+  }
+
+  @Provides
+  @Named("ioScheduler")
+  @Singleton
+  public Scheduler provideioScheduler() {
+    return Schedulers.io();
   }
 
   private void strictMode() {

@@ -6,5 +6,10 @@
     <string name="action_settings">Settings</string>
     <string name="action_add">Add</string>
     <string name="remove_place">Remove</string>
+    <string name="cannot_find_geo_for_specified_location">Cannot find geo for specified location
+    </string>
+    <string name="something_went_wrong_with_adding_new_location">Something went wrong with adding
+        new location
+    </string>
 
 </resources>

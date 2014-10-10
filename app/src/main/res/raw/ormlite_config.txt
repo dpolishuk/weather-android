@@ -1,5 +1,5 @@
 # --table-start--
-dataClass=io.dp.weather.app.db.table.City
+dataClass=io.dp.weather.app.db.table.Place
 tableName=cities
 # --table-fields-start--
 # --field-start--

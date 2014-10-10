@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 import io.dp.weather.app.BuildConfig;
 import io.dp.weather.app.R;
-import io.dp.weather.app.db.table.City;
+import io.dp.weather.app.db.table.Place;
 import timber.log.Timber;
 
 /**
@@ -25,13 +25,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
   Context context;
 
-  private volatile Dao<City, Long> cityDao = null;
+  private volatile Dao<Place, Long> placeDao = null;
 
-  City[] predefinedCities = {
-      new City("Dublin", 53.34410, -6.2674),
-      new City("London", 51.51121, -0.1198),
-      new City("New York", 40.71278, -74.00594),
-      new City("Barcelona", 41.3850, 2.1734)
+  Place[] predefinedCities = {
+      new Place("Dublin", 53.34410, -6.2674),
+      new Place("London", 51.51121, -0.1198),
+      new Place("New York", 40.71278, -74.00594),
+      new Place("Barcelona", 41.3850, 2.1734)
   };
 
   public DatabaseHelper(Context context) {
@@ -44,10 +44,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     Timber.v("! onCreateDatabase");
 
     try {
-      TableUtils.createTableIfNotExists(connectionSource, City.class);
-      Dao<City, Long> cityDao = getCityDao();
-      for (City city : predefinedCities) {
-        cityDao.createIfNotExists(city);
+      TableUtils.createTableIfNotExists(connectionSource, Place.class);
+      Dao<Place, Long> cityDao = getPlaceDao();
+      for (Place place : predefinedCities) {
+        cityDao.createIfNotExists(place);
       }
     } catch (SQLException e) {
       e.printStackTrace();
@@ -60,15 +60,15 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
     Timber.v("! onUpgradeDatabase");
   }
 
-  public Dao<City, Long> getCityDao() throws SQLException {
-    Dao<City, Long> resultDao = cityDao;
+  public Dao<Place, Long> getPlaceDao() throws SQLException {
+    Dao<Place, Long> resultDao = placeDao;
 
     if (resultDao == null) {
       synchronized (this) {
-        resultDao = cityDao;
+        resultDao = placeDao;
 
         if (resultDao == null) {
-          cityDao = resultDao = getDao(City.class);
+          placeDao = resultDao = getDao(Place.class);
         }
       }
     }
@@ -79,6 +79,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
   public void close() {
     super.close();
 
-    cityDao = null;
+    placeDao = null;
   }
 }
