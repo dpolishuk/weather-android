@@ -123,7 +123,7 @@ public class WeatherFragmentTest {
       View v = f.adapter.getView(0, null, null);
       TextView degreeType = (TextView) v.findViewById(R.id.degrees_type);
       assertNotNull(degreeType);
-      assertEquals(Const.CELCIUS, degreeType.getText());
+      assertEquals(app.getResources().getString(R.string.celcius), degreeType.getText());
     }
 
     {
@@ -132,7 +132,7 @@ public class WeatherFragmentTest {
       View v = f.adapter.getView(0, null, null);
       TextView degreeType = (TextView) v.findViewById(R.id.degrees_type);
       assertNotNull(degreeType);
-      assertEquals(Const.FAHRENHEIT, degreeType.getText());
+      assertEquals(app.getResources().getString(R.string.fahrenheit), degreeType.getText());
     }
 
   }
