@@ -1,0 +1,9 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_temperature">Temperature units</string>
+    <string name="pref_description_temperature_units">Celsius - ON, Fahrenheit - OFF</string>
+
+</resources>

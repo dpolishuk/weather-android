@@ -7,4 +7,9 @@
           android:icon="@android:drawable/ic_menu_add"
           android:actionViewClass="android.widget.AutoCompleteTextView"
           android:showAsAction="ifRoom|collapseActionView"/>
+
+      <item android:id="@+id/action_settings"
+            android:title="@string/action_settings"
+            android:orderInCategory="100"
+            android:showAsAction="never|withText"/>
 </menu>

@@ -1,12 +1,18 @@
 package io.dp.weather.app.adapter;
 
-import android.content.Context;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import android.app.Activity;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
+import io.dp.weather.app.R;
 import io.dp.weather.app.net.PlacesApi;
 
 /**
@@ -15,9 +21,12 @@ import io.dp.weather.app.net.PlacesApi;
 public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements Filterable {
 
   private ArrayList<String> resultList;
+  private PlacesApi placesApi;
 
-  public PlacesAutoCompleteAdapter(Context context, int textViewResourceId) {
-    super(context, textViewResourceId);
+  @Inject
+  public PlacesAutoCompleteAdapter(Activity activity, PlacesApi placesApi) {
+    super(activity, R.layout.item_search_list);
+    this.placesApi = placesApi;
   }
 
   @Override
@@ -37,8 +46,17 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
       protected Filter.FilterResults performFiltering(CharSequence constraint) {
         FilterResults filterResults = new FilterResults();
         if (constraint != null) {
-          // Retrieve the autocomplete results.
-          resultList = PlacesApi.autocomplete(constraint.toString());
+          JsonObject jsonResults = placesApi.getAutocomplete(constraint.toString());
+
+          // Create a JSON object hierarchy from the results
+          JsonArray predsJsonArray = jsonResults.getAsJsonArray("predictions");
+
+          // Extract the Place descriptions from the results
+          resultList = new ArrayList<String>(predsJsonArray.size());
+          for (int i = 0; i < predsJsonArray.size(); i++) {
+            resultList.add(
+                ((JsonObject) predsJsonArray.get(i)).get("description").getAsString());
+          }
 
           // Assign the data to the FilterResults
           filterResults.values = resultList;

@@ -17,8 +17,7 @@ import io.dp.weather.app.fragment.WeatherFragment;
 @Module(
     injects = {
         MainActivity.class,
-        WeatherFragment.class,
-        TestActivity.class
+        WeatherFragment.class
     },
     addsTo = AppModule.class,
     library = true)

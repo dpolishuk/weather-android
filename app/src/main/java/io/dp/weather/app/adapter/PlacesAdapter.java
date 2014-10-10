@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -73,7 +74,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     this.inflater = LayoutInflater.from(activity);
     this.gson = gson;
     this.api = api;
-    this.prefs = activity.getPreferences(Context.MODE_PRIVATE);
+    this.prefs = PreferenceManager.getDefaultSharedPreferences(activity);
     this.bus = bus;
     this.uiScheduler = uiScheduler;
     this.ioScheduler = ioScheduler;
@@ -123,7 +124,6 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     });
 
     long lastRequestTime = prefs.getLong(hash + "_time", -1);
-    Timber.v("Last request time for " + hash + " was " + lastRequestTime);
     if (lastRequestTime == -1 || (lastRequestTime > 0
                                   && (System.currentTimeMillis() - lastRequestTime)
                                      > DateUtils.DAY_IN_MILLIS)) {
@@ -171,7 +171,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
           holder.degreeTypeView.setText(Const.CELCIUS);
         } else {
           holder.temperatureView.setText(condition.getTempF());
-          holder.temperatureView.setText(Const.FAHRENHEIT);
+          holder.degreeTypeView.setText(Const.FAHRENHEIT);
         }
 
         List<WeatherIconUrl> urls = conditions.get(0).getWeatherIconUrl();

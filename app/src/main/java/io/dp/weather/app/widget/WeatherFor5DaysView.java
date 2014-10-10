@@ -66,7 +66,7 @@ public class WeatherFor5DaysView extends LinearLayout {
         tempViews[i].setText(
             String.format("%s-%s" + Const.CELCIUS, weather.getTempMinC(), weather.getTempMaxC()));
       } else {
-        tempViews[i].setText(String.format("%s-%sF˚" + Const.FAHRENHEIT, weather.getTempMinF(),
+        tempViews[i].setText(String.format("%s-%s" + Const.FAHRENHEIT, weather.getTempMinF(),
                                            weather.getTempMaxF()));
       }
 

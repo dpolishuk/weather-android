@@ -15,6 +15,7 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.utils.AsyncBus;
 import retrofit.RequestInterceptor;
@@ -66,6 +67,28 @@ public class AppModule {
     RestAdapter
         restAdapter = b.setEndpoint(BuildConfig.FORECAST_API_URL).build();
     return restAdapter.create(WeatherApi.class);
+  }
+
+  @Provides
+  @Singleton
+  public PlacesApi providePlacesApi() {
+    RestAdapter.Builder b = new RestAdapter.Builder();
+
+    if (BuildConfig.DEBUG) {
+      b.setLogLevel(RestAdapter.LogLevel.FULL);
+    }
+
+    b.setRequestInterceptor(new RequestInterceptor() {
+      @Override
+      public void intercept(RequestFacade request) {
+        request.addQueryParam("key", BuildConfig.PLACES_API_KEY);
+        request.addQueryParam("sensor", "false");
+      }
+    });
+
+    RestAdapter
+        restAdapter = b.setEndpoint(BuildConfig.PLACES_API_URL).build();
+    return restAdapter.create(PlacesApi.class);
   }
 
   @Provides

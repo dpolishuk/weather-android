@@ -1,6 +1,7 @@
 package io.dp.weather.app.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import javax.inject.Named;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import io.dp.weather.app.R;
+import io.dp.weather.app.activity.SettingsActivity;
 import io.dp.weather.app.adapter.PlacesAdapter;
 import io.dp.weather.app.adapter.PlacesAutoCompleteAdapter;
 import io.dp.weather.app.db.DatabaseHelper;
@@ -65,6 +67,9 @@ public class WeatherFragment extends BaseFragment
 
   @Inject
   Bus bus;
+
+  @Inject
+  PlacesAutoCompleteAdapter placesAutoCompleteAdapter;
 
   @Inject
   @Named("uiScheduler")
@@ -112,6 +117,8 @@ public class WeatherFragment extends BaseFragment
   public void onResume() {
     super.onResume();
     bus.register(this);
+
+    adapter.notifyDataSetChanged();
   }
 
   @Override
@@ -154,7 +161,7 @@ public class WeatherFragment extends BaseFragment
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
     addView.setLayoutParams(params);
-    addView.setAdapter(new PlacesAutoCompleteAdapter(getActivity(), R.layout.item_search_list));
+    addView.setAdapter(placesAutoCompleteAdapter);
     addView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -176,8 +183,13 @@ public class WeatherFragment extends BaseFragment
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
-    if (id == R.id.action_add) {
-      return true;
+    switch (id) {
+      case R.id.action_add:
+        return true;
+
+      case R.id.action_settings:
+        startActivity(new Intent(getActivity(), SettingsActivity.class));
+        return true;
     }
     return super.onOptionsItemSelected(item);
   }
@@ -207,6 +219,12 @@ public class WeatherFragment extends BaseFragment
   @Override
   public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
     adapter.changeCursor(cursor);
+    gridView.post(new Runnable() {
+      @Override
+      public void run() {
+        gridView.setSelection(gridView.getCount() - 1);
+      }
+    });
   }
 
   @Override
@@ -251,12 +269,6 @@ public class WeatherFragment extends BaseFragment
 
   @Override
   public void onNext(Place place) {
-    gridView.post(new Runnable() {
-      @Override
-      public void run() {
-        gridView.setSelection(gridView.getCount() - 1);
-      }
-    });
     bus.post(new UpdateListEvent());
   }
 }

@@ -5,7 +5,7 @@ package io.dp.weather.app;
  */
 public class Const {
 
-  public static final String USE_CELCIUS = "useCelsius";
+  public static final String USE_CELCIUS = "temperature_switch";
 
   public static final String CELCIUS = "C˚";
   public static final String FAHRENHEIT = "F˚";
