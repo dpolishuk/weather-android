@@ -1,10 +1,16 @@
 package io.dp.weather.app.fragment;
 
+import android.app.Application;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
+import android.view.View;
+import android.widget.TextView;
 
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.squareup.otto.Bus;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,11 +24,16 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import dagger.ObjectGraph;
+import io.dp.weather.app.Const;
+import io.dp.weather.app.MockAppModule;
+import io.dp.weather.app.R;
 import io.dp.weather.app.TestUtils;
 import io.dp.weather.app.TestWeatherApplication;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.AddPlaceEvent;
+import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.net.WeatherApi;
 
 import static org.junit.Assert.assertEquals;
@@ -30,15 +41,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Created by dp on 10/10/14.
+ */
+
 @Config(emulateSdk = 18)
 @RunWith(RobolectricTestRunner.class)
-public class WeatherFragmentAddItemTest {
+public class WeatherFragmentTest {
 
   @Inject
   WeatherApi weatherApi;
 
   @Inject
-  DatabaseHelper dbHelper;
+  Application app;
 
   @Inject
   Bus bus;
@@ -46,13 +61,26 @@ public class WeatherFragmentAddItemTest {
   @Inject
   Geocoder geocoder;
 
+  @Inject
+  DatabaseHelper databaseHelper;
+
+  @Inject
+  SharedPreferences prefs;
+
   @Before
   public void setUp() throws Exception {
+
     ((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
   }
 
+  @After
+  public void tearDown() throws Exception {
+
+    databaseHelper.getWritableDatabase().close();
+  }
+
   @Test
-  public void testAddPlaceFragment() throws Exception {
+  public void testAddRemovePlaceFragment() throws Exception {
     WeatherFragment f = new WeatherFragment();
     TestUtils.startWeatherFragment(f);
     assertNotNull(f);
@@ -75,10 +103,37 @@ public class WeatherFragmentAddItemTest {
 
     f.onAddPlace(new AddPlaceEvent(placeName));
 
-    List<Place> places = dbHelper.getPlaceDao().queryForEq(Place.NAME, placeName);
+    List<Place> places = databaseHelper.getPlaceDao().queryForEq(Place.NAME, placeName);
 
     assertEquals(1, places.size());
     assertEquals(placeName, places.get(0).getName());
-  }
 
+    assertEquals(5, f.adapter.getCount());
+
+    f.onDeletePlace(new DeletePlaceEvent(1L));
+    f.adapter.notifyDataSetInvalidated();
+
+    List<Place> placeList = databaseHelper.getPlaceDao().queryForAll();
+    assertEquals(4, placeList.size());
+    assertEquals(4, f.adapter.getCount());
+
+    {
+      prefs.edit().putBoolean(Const.USE_CELCIUS, true).commit();
+
+      View v = f.adapter.getView(0, null, null);
+      TextView degreeType = (TextView) v.findViewById(R.id.degrees_type);
+      assertNotNull(degreeType);
+      assertEquals(Const.CELCIUS, degreeType.getText());
+    }
+
+    {
+      prefs.edit().putBoolean(Const.USE_CELCIUS, false).commit();
+
+      View v = f.adapter.getView(0, null, null);
+      TextView degreeType = (TextView) v.findViewById(R.id.degrees_type);
+      assertNotNull(degreeType);
+      assertEquals(Const.FAHRENHEIT, degreeType.getText());
+    }
+
+  }
 }

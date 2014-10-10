@@ -21,7 +21,6 @@ public abstract class BaseActivity extends SherlockFragmentActivity {
     activityModule = new ActivityModule(this);
     activityGraph = application.getApplicationGraph().plus(activityModule);
 
-    // Inject ourselves so subclasses will have dependencies fulfilled when this method returns.
     activityGraph.inject(this);
 
     super.onCreate(savedInstanceState);

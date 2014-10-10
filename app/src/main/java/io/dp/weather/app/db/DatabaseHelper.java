@@ -10,6 +10,9 @@ import com.j256.ormlite.table.TableUtils;
 
 import java.sql.SQLException;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import io.dp.weather.app.BuildConfig;
 import io.dp.weather.app.R;
 import io.dp.weather.app.db.table.Place;

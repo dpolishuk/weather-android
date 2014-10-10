@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.location.Geocoder;
 import android.preference.PreferenceManager;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.squareup.otto.Bus;
 
 import javax.inject.Named;
@@ -17,9 +16,7 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.dp.weather.app.db.DatabaseHelper;
-import io.dp.weather.app.fragment.PlacesAdapterTest;
-import io.dp.weather.app.fragment.WeatherFragmentAddItemTest;
-import io.dp.weather.app.fragment.WeatherFragmentRemoveItemTest;
+import io.dp.weather.app.fragment.WeatherFragmentTest;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.Forecast;
@@ -38,15 +35,19 @@ import static org.mockito.Mockito.mock;
  * Created by dp on 08/10/14.
  */
 
-@Module(overrides = true, injects = {WeatherFragmentAddItemTest.class,
-                                     WeatherFragmentRemoveItemTest.class,
-                                     PlacesAdapterTest.class}, library = true)
+@Module(overrides = true, library = true, injects = {WeatherFragmentTest.class})
 public class MockAppModule {
 
   private Application application;
 
   public MockAppModule(Application application) {
     this.application = application;
+  }
+
+  @Provides
+  @Singleton
+  public Application provideApplication() {
+    return application;
   }
 
   @Provides
@@ -111,12 +112,6 @@ public class MockAppModule {
     return restAdapter.create(PlacesApi.class);
   }
 
-
-  @Provides
-  public DatabaseHelper provideDatabaseHelper() {
-    return OpenHelperManager.getHelper(application, DatabaseHelper.class);
-  }
-
   @Provides
   @Singleton
   public Gson provideGson() {
@@ -138,6 +133,11 @@ public class MockAppModule {
   @Provides
   public SharedPreferences provideSharedPreferences() {
     return PreferenceManager.getDefaultSharedPreferences(application);
+  }
+
+  @Provides
+  public DatabaseHelper provideDatabaseHelper(Application app) {
+    return new DatabaseHelper(app);
   }
 
   private class MockWeatherApi implements WeatherApi {

@@ -15,7 +15,6 @@ public class TestWeatherApplication extends WeatherApplication implements TestLi
   @Override
   protected void createObjectGraph() {
     System.setProperty("robolectric.logging","stderr");
-
     setObjectGraph(ObjectGraph.create(new MockAppModule(Robolectric.application)));
   }
 
