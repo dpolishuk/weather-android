@@ -42,4 +42,4 @@ Small clarification: To refresh weathers list - just pull down (I used SwipeRefr
 
 ### Dependencies graph ###
 
-![DEPENDENCIES_IMG](weather-android/raw/master/dependency-graph.png)
+![DEPENDENCIES_IMG](weather-android/raw/0b2d9f03707e9a6dd1f12bf2e7a882d9b2ce4a76/dependency-graph.png)
