@@ -20,6 +20,7 @@ I use shared preferences as a cache for forecast responses and update this cache
 
 ### Dependencies ###
 I used a lot of 3rd libraries and the main reason why I did it, just to speed up development process.
+
 * rxjava - just to not hesitate with AsyncTask
 * retrofit - quick bootstrap of any http webservice stub
 * ormlite - quick database juggling
