@@ -39,3 +39,7 @@ Applications consists of two screens:
  2. settings activity where the user can specify Temperature Units (Celcius or Fahrenheit)
 
 Small clarification: To refresh weathers list - just pull down (I used SwipeRefreshLayout from support library)
+
+### Dependencies graph ###
+
+![DEPENDENCIES_IMG](dependency-graph.png)
