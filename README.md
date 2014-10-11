@@ -1,7 +1,3 @@
-# README #
-
-This README would normally document whatever steps are necessary to get your application up and running.
-
 ### What is this repository for? ###
 
 * This is weather android app which uses worldweatheronline.com as data provider
