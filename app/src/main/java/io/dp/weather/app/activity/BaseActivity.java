@@ -39,5 +39,7 @@ public abstract class BaseActivity extends SherlockFragmentActivity {
     if (activityModule != null) {
       activityModule.releaseDatabaseHelper();
     }
+
+    activityGraph = null;
   }
 }
