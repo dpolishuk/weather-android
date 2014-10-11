@@ -6,7 +6,7 @@
 ### How do I get set up? ###
 
 * ./gradlew clean build
-* and don't forget to setup your sdk.dir
+* and don't forget to setup your sdk.dir (via local.properties or direct specification)
 
 ### Design concepts ###
 
@@ -15,8 +15,9 @@ I wanted to split all classes out from each other onto independent components.
 
 Interaction with weather web-service is based on fetching forecast by latitude and longitude.
 I use shared preferences as a cache for forecast responses and update this cache in two cases:
-	1) user refreshed the list manually by pull-to-refresh action on the list of data
-	2) time of response is expired (it's 24 hours) and in the next scrolling action - application will try to fetch new data for this location
+
+1. user refreshed the list manually by pull-to-refresh action on the list of data
+2. time of response is expired (it's 24 hours) and in the next scrolling action - application will try to fetch new data for this location
 
 ### Dependencies ###
 I used a lot of 3rd libraries and the main reason why I did it, just to speed up development process.
@@ -33,7 +34,8 @@ I used a lot of 3rd libraries and the main reason why I did it, just to speed up
 DI, EventBus, Observer, Builder
 
 Applications consists of two screens:
-	* main screen with weather dashboard
-	* settings activity where the user can specify Temperature Units (Celcius or Fahrenheit)
+
+ 1. main screen with weather dashboard
+ 2. settings activity where the user can specify Temperature Units (Celcius or Fahrenheit)
 
 Small clarification: To refresh weathers list - just pull down (I used SwipeRefreshLayout from support library)

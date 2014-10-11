@@ -84,6 +84,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
   }
 
   public void clear() {
+    this.cache.evictAll();
     this.prefs.edit().clear().apply();
   }
 
