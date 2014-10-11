@@ -5,7 +5,7 @@ package io.dp.weather.app.event;
  */
 public class AddPlaceEvent {
 
-  private String lookupPlace;
+  private final String lookupPlace;
 
   public AddPlaceEvent(String lookupPlace) {
     this.lookupPlace = lookupPlace;

@@ -5,7 +5,7 @@ package io.dp.weather.app.event;
  */
 public class DeletePlaceEvent {
 
-  private Long id;
+  private final Long id;
 
   public DeletePlaceEvent(Long id) {
     this.id = id;

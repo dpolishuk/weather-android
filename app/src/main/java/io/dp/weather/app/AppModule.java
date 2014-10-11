@@ -11,11 +11,12 @@ import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 import com.squareup.picasso.Picasso;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.dp.weather.app.annotation.IOScheduler;
+import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.utils.AsyncBus;
@@ -32,7 +33,7 @@ import timber.log.Timber;
 @Module(library = true)
 public class AppModule {
 
-  protected Application application;
+  protected final Application application;
 
   public AppModule(WeatherApplication application) {
     this.application = application;
@@ -113,14 +114,14 @@ public class AppModule {
   }
 
   @Provides
-  @Named("uiScheduler")
+  @UIScheduler
   @Singleton
   public Scheduler provideUiScheduler() {
     return AndroidSchedulers.mainThread();
   }
 
   @Provides
-  @Named("ioScheduler")
+  @IOScheduler
   @Singleton
   public Scheduler provideioScheduler() {
     return Schedulers.io();

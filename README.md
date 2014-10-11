@@ -24,7 +24,7 @@ I used a lot of 3rd libraries and the main reason why I did it, just to speed up
 
 * rxjava - don't like to hassle with AsyncTask
 * retrofit - quick bootstrap of any http webservice stub
-* ormlite - quick database juggling
+* ormlite - quick bootstrap for database
 * otto - eventbus
 * dagger - DI
 * com.etsy.android.grid - Staggered GridView for weather dashboard

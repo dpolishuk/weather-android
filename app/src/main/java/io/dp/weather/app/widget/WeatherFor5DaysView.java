@@ -17,7 +17,6 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectViews;
-import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.WeatherIconUrl;
 import io.dp.weather.app.net.dto.Weather;
@@ -25,6 +24,7 @@ import io.dp.weather.app.net.dto.Weather;
 /**
  * Created by dp on 08/10/14.
  */
+
 public class WeatherFor5DaysView extends LinearLayout {
 
   @InjectViews({R.id.day_name_1, R.id.day_name_2, R.id.day_name_3, R.id.day_name_4, R.id.day_name_5})

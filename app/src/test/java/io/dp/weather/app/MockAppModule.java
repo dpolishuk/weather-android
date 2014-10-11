@@ -4,17 +4,21 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Geocoder;
 import android.preference.PreferenceManager;
 
 import com.squareup.otto.Bus;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import io.dp.weather.app.annotation.CachePrefs;
+import io.dp.weather.app.annotation.ConfigPrefs;
+import io.dp.weather.app.annotation.IOScheduler;
+import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.fragment.WeatherFragmentTest;
 import io.dp.weather.app.net.PlacesApi;
@@ -51,14 +55,14 @@ public class MockAppModule {
   }
 
   @Provides
-  @Named("uiScheduler")
+  @UIScheduler
   @Singleton
   public Scheduler provideUiScheduler() {
     return Schedulers.immediate();
   }
 
   @Provides
-  @Named("ioScheduler")
+  @IOScheduler
   @Singleton
   public Scheduler provideioScheduler() {
     return Schedulers.immediate();
@@ -131,8 +135,15 @@ public class MockAppModule {
   }
 
   @Provides
-  public SharedPreferences provideSharedPreferences() {
+  @ConfigPrefs
+  public SharedPreferences provideConfigPrefs() {
     return PreferenceManager.getDefaultSharedPreferences(application);
+  }
+
+  @Provides
+  @CachePrefs
+  public SharedPreferences provideCachePrefs() {
+    return application.getSharedPreferences("cachePrefs", Context.MODE_PRIVATE);
   }
 
   @Provides

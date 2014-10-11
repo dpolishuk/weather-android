@@ -7,7 +7,6 @@ import android.location.Geocoder;
 import android.view.View;
 import android.widget.TextView;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.squareup.otto.Bus;
 
 import org.junit.After;
@@ -24,12 +23,11 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import dagger.ObjectGraph;
 import io.dp.weather.app.Const;
-import io.dp.weather.app.MockAppModule;
 import io.dp.weather.app.R;
 import io.dp.weather.app.TestUtils;
 import io.dp.weather.app.TestWeatherApplication;
+import io.dp.weather.app.annotation.ConfigPrefs;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.AddPlaceEvent;
@@ -65,11 +63,11 @@ public class WeatherFragmentTest {
   DatabaseHelper databaseHelper;
 
   @Inject
+  @ConfigPrefs
   SharedPreferences prefs;
 
   @Before
   public void setUp() throws Exception {
-
     ((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
   }
 

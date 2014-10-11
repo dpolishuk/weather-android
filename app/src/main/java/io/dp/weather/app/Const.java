@@ -11,4 +11,6 @@ public class Const {
 
   public static final int FORECAST_FOR_DAYS = 5;
   public static float CONVERT_MMHG = 0.75f;
+
+
 }

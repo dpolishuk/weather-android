@@ -24,13 +24,15 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.WeatherIconUrl;
+import io.dp.weather.app.annotation.CachePrefs;
+import io.dp.weather.app.annotation.IOScheduler;
+import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.db.OrmliteCursorAdapter;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.DeletePlaceEvent;
@@ -38,12 +40,12 @@ import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.CurrentCondition;
 import io.dp.weather.app.net.dto.Forecast;
 import io.dp.weather.app.net.dto.WeatherDesc;
+import io.dp.weather.app.utils.MetricsController;
 import io.dp.weather.app.utils.WhiteBorderCircleTransformation;
 import io.dp.weather.app.widget.WeatherFor5DaysView;
 import rx.Scheduler;
 import rx.Subscriber;
 import rx.android.observables.AndroidObservable;
-import timber.log.Timber;
 
 /**
  * Created by dp on 08/10/14.
@@ -63,18 +65,21 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
   private final Scheduler uiScheduler;
   private final Scheduler ioScheduler;
+  private final MetricsController metrics;
 
   private final WhiteBorderCircleTransformation transformation = new WhiteBorderCircleTransformation();
 
   @Inject
   public PlacesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus,
-                       SharedPreferences prefs,
-                       @Named("uiScheduler") Scheduler uiScheduler,
-                       @Named("ioScheduler") Scheduler ioScheduler) {
+                       MetricsController metrics,
+                       @CachePrefs SharedPreferences prefs,
+                       @UIScheduler Scheduler uiScheduler,
+                       @IOScheduler Scheduler ioScheduler) {
     super(activity, null, null);
 
     this.activity = activity;
     this.inflater = LayoutInflater.from(activity);
+    this.metrics = metrics;
     this.gson = gson;
     this.api = api;
     this.prefs = prefs;
@@ -98,10 +103,6 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
   @Override
   public void bindView(View itemView, Context context, final Place place) {
-    boolean useCelcius = prefs.getBoolean(Const.USE_CELCIUS, false);
-    boolean useKmph = prefs.getBoolean(Const.USE_KMPH, false);
-    boolean useMmhg = prefs.getBoolean(Const.USE_MMHG, false);
-
     ViewHolder holder = (ViewHolder) itemView.getTag();
 
     final String hash = String.valueOf(place.hashCode());
@@ -111,7 +112,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     holder.menuView.setTag(place.getId());
     holder.menuView.setOnClickListener(popupOnClickListener);
 
-    if (useCelcius) {
+    if (metrics.useCelsius()) {
       holder.degreeTypeView.setText(R.string.celcius);
     } else {
       holder.degreeTypeView.setText(R.string.fahrenheit);
@@ -121,13 +122,13 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     if (lastRequestTime == -1 ||
         (lastRequestTime > 0 &&
          (System.currentTimeMillis() - lastRequestTime) > DateUtils.DAY_IN_MILLIS)) {
-      Timber.v("Tryting to get forecast for " + hash);
 
       holder.progressView.setVisibility(View.VISIBLE);
       holder.contentView.setVisibility(View.GONE);
 
       String rawForecast = prefs.getString(hash, null);
 
+      // So, forecast is expired or it doesn't exist - let's go to fetch it
       if (!TextUtils.isEmpty(hash)) {
         if (TextUtils.isEmpty(rawForecast)) {
           Double lat = place.getLat();
@@ -145,6 +146,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
       Forecast f = cache.get(place.getId());
       if (f == null) {
+        // forecast exists - load it from cache
         String rawForecast = prefs.getString(hash, null);
         f = gson.fromJson(rawForecast, Forecast.class);
         cache.put(place.getId(), f);
@@ -159,7 +161,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
         try {
           int pressure = Integer.valueOf(condition.getPressure());
 
-          if (useMmhg) {
+          if (metrics.useMmhg()) {
             holder.pressureView.setText(context.getString(R.string.fmt_pressure_mmhg, (int) (pressure * Const.CONVERT_MMHG)));
           } else {
             holder.pressureView.setText(context.getString(R.string.fmt_pressure_kpa, pressure));
@@ -170,7 +172,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
         StringBuilder sb = new StringBuilder();
         sb.append(condition.getWinddir16Point()).append(", ");
-        if (useKmph) {
+        if (metrics.useKmph()) {
           sb.append(context.getString(R.string.fmt_windspeed_kmph, condition.getWindspeedKmph()));
         } else {
           sb.append(context.getString(R.string.fmt_windspeed_mph, condition.getWindspeedMiles()));
@@ -184,7 +186,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
           holder.weatherDescView.setText(description);
         }
 
-        if (useCelcius) {
+        if (metrics.useCelsius()) {
           holder.temperatureView.setText(condition.getTempC());
         } else {
           holder.temperatureView.setText(condition.getTempF());
@@ -200,7 +202,8 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
         }
       }
 
-      holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), useCelcius, transformation);
+      holder.weatherFor5DaysView
+          .setWeatherForWeek(f.getData().getWeather(), metrics.useCelsius(), transformation);
     }
   }
 

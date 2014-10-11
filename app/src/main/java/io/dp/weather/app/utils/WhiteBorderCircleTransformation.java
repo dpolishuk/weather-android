@@ -13,7 +13,7 @@ import com.squareup.picasso.Transformation;
  */
 public class WhiteBorderCircleTransformation implements Transformation {
 
-  Paint whitePaint = new Paint();
+  private final Paint whitePaint = new Paint();
 
   public WhiteBorderCircleTransformation() {
     whitePaint.setColor(Color.WHITE);

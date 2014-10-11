@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -35,6 +34,8 @@ import io.dp.weather.app.R;
 import io.dp.weather.app.activity.SettingsActivity;
 import io.dp.weather.app.adapter.PlacesAdapter;
 import io.dp.weather.app.adapter.PlacesAutoCompleteAdapter;
+import io.dp.weather.app.annotation.IOScheduler;
+import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.OrmliteCursorLoader;
 import io.dp.weather.app.db.Queries;
@@ -74,11 +75,11 @@ public class WeatherFragment extends BaseFragment
   PlacesAutoCompleteAdapter placesAutoCompleteAdapter;
 
   @Inject
-  @Named("uiScheduler")
+  @UIScheduler
   Scheduler uiScheduler;
 
   @Inject
-  @Named("ioScheduler")
+  @IOScheduler
   Scheduler ioScheduler;
 
   @InjectView(R.id.grid)
