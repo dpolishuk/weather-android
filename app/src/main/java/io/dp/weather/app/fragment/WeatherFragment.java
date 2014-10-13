@@ -106,6 +106,8 @@ public class WeatherFragment extends BaseFragment
   public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
 
+    setRetainInstance(true);
+
     adapter.setQuery(Queries.prepareCityQuery(dbHelper));
     gridView.setAdapter(adapter);
 
