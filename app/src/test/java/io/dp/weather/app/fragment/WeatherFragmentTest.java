@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.squareup.otto.Bus;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +28,7 @@ import io.dp.weather.app.TestUtils;
 import io.dp.weather.app.TestWeatherApplication;
 import io.dp.weather.app.annotation.ConfigPrefs;
 import io.dp.weather.app.db.DatabaseHelper;
+import io.dp.weather.app.db.FixedShadowSQLiteOpenHelper;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.AddPlaceEvent;
 import io.dp.weather.app.event.DeletePlaceEvent;
@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
  * Created by dp on 10/10/14.
  */
 
-@Config(emulateSdk = 18)
+@Config(emulateSdk = 18, shadows = FixedShadowSQLiteOpenHelper.class)
 @RunWith(RobolectricTestRunner.class)
 public class WeatherFragmentTest {
 
@@ -69,12 +69,6 @@ public class WeatherFragmentTest {
   @Before
   public void setUp() throws Exception {
     ((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-
-    databaseHelper.getWritableDatabase().close();
   }
 
   @Test
@@ -115,6 +109,15 @@ public class WeatherFragmentTest {
     assertEquals(4, placeList.size());
     assertEquals(4, f.adapter.getCount());
 
+  }
+
+  @Test
+  public void testMetrics() throws Exception {
+    WeatherFragment f = new WeatherFragment();
+    TestUtils.startWeatherFragment(f);
+    assertNotNull(f);
+    assertNotNull(f.adapter);
+
     {
       prefs.edit().putBoolean(Const.USE_CELCIUS, true).commit();
 
@@ -132,6 +135,5 @@ public class WeatherFragmentTest {
       assertNotNull(degreeType);
       assertEquals(app.getResources().getString(R.string.fahrenheit), degreeType.getText());
     }
-
   }
 }
