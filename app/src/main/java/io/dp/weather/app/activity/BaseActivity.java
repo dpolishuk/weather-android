@@ -1,45 +1,27 @@
 package io.dp.weather.app.activity;
 
 import android.os.Bundle;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-
-import dagger.ObjectGraph;
+import android.support.v7.app.AppCompatActivity;
 import io.dp.weather.app.WeatherApplication;
 
 /**
  * Created by dp on 07/10/14.
  */
-public abstract class BaseActivity extends SherlockFragmentActivity {
+public abstract class BaseActivity extends AppCompatActivity {
 
-  private ObjectGraph activityGraph;
-  private ActivityModule activityModule;
+  private ActivityComponent component;
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    WeatherApplication application = (WeatherApplication) getApplication();
-    activityModule = new ActivityModule(this);
-    activityGraph = application.getApplicationGraph().plus(activityModule);
-
-    activityGraph.inject(this);
-
+  @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    WeatherApplication app = (WeatherApplication) getApplication();
+    this.component = DaggerActivityComponent.builder()
+        .appComponent(app.getComponent())
+        .activityModule(new ActivityModule(this))
+        .build();
   }
 
-  public void inject(Object object) {
-    if (activityGraph != null) {
-      activityGraph.inject(object);
-    }
-  }
-
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-
-    if (activityModule != null) {
-      activityModule.releaseDatabaseHelper();
-    }
-
-    activityGraph = null;
+  public ActivityComponent getComponent() {
+    return component;
   }
 }

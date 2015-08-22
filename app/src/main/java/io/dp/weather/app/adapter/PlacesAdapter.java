@@ -45,7 +45,6 @@ import io.dp.weather.app.utils.WhiteBorderCircleTransformation;
 import io.dp.weather.app.widget.WeatherFor5DaysView;
 import rx.Scheduler;
 import rx.Subscriber;
-import rx.android.observables.AndroidObservable;
 
 /**
  * Created by dp on 08/10/14.
@@ -133,11 +132,12 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
         if (TextUtils.isEmpty(rawForecast)) {
           Double lat = place.getLat();
           Double lon = place.getLon();
-          AndroidObservable
-              .bindActivity(activity, api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS))
-              .subscribeOn(ioScheduler)
-              .observeOn(uiScheduler)
-              .subscribe(new ForecastCacheSubscriber(hash));
+          //
+          //AndroidObservable
+          //    .bindActivity(activity, api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS))
+          //    .subscribeOn(ioScheduler)
+          //    .observeOn(uiScheduler)
+          //    .subscribe(new ForecastCacheSubscriber(hash));
         }
       }
     } else {

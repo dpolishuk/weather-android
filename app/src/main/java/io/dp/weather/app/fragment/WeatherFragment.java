@@ -9,15 +9,15 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.etsy.android.grid.StaggeredGridView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -48,7 +48,7 @@ import rx.Observable;
 import rx.Observer;
 import rx.Scheduler;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+//import rx.android.observables.AndroidObservable;
 
 /**
  * Created by dp on 08/10/14.
@@ -106,6 +106,8 @@ public class WeatherFragment extends BaseFragment
   public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
 
+    getComponent().inject(this);
+
     setRetainInstance(true);
 
     adapter.setQuery(Queries.prepareCityQuery(dbHelper));
@@ -139,42 +141,42 @@ public class WeatherFragment extends BaseFragment
     final MenuItem addItem = menu.findItem(R.id.action_add);
 
     final AutoCompleteTextView addView = (AutoCompleteTextView) addItem.getActionView();
-    addItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-      @Override
-      public boolean onMenuItemActionExpand(MenuItem menuItem) {
-        addView.post(new Runnable() {
-          @Override
-          public void run() {
-            addView.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(addView, InputMethodManager.SHOW_IMPLICIT);
-          }
-        });
-        return true;
-      }
+    //addItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+    //  @Override
+    //  public boolean onMenuItemActionExpand(MenuItem menuItem) {
+    //    addView.post(new Runnable() {
+    //      @Override
+    //      public void run() {
+    //        addView.requestFocus();
+    //        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
+    //            Context.INPUT_METHOD_SERVICE);
+    //        imm.showSoftInput(addView, InputMethodManager.SHOW_IMPLICIT);
+    //      }
+    //    });
+    //    return true;
+    //  }
+    //
+    //  @Override
+    //  public boolean onMenuItemActionCollapse(MenuItem menuItem) {
+    //    return true;
+    //  }
+    //});
 
-      @Override
-      public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-        return true;
-      }
-    });
-
-    ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-    addView.setLayoutParams(params);
-    addView.setAdapter(placesAutoCompleteAdapter);
-    addView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        final String lookupPlace = (String) parent.getItemAtPosition(position);
-        addItem.collapseActionView();
-        addView.setText("");
-
-        bus.post(new AddPlaceEvent(lookupPlace));
-      }
-    });
+    //ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+    //    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    //
+    //addView.setLayoutParams(params);
+    //addView.setAdapter(placesAutoCompleteAdapter);
+    //addView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    //  @Override
+    //  public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    //    final String lookupPlace = (String) parent.getItemAtPosition(position);
+    //    addItem.collapseActionView();
+    //    addView.setText("");
+    //
+    //    bus.post(new AddPlaceEvent(lookupPlace));
+    //  }
+    //});
   }
 
   @Override
@@ -204,8 +206,7 @@ public class WeatherFragment extends BaseFragment
   public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
     try {
-      return new OrmliteCursorLoader<Place>(getActivity(), dbHelper.getPlaceDao(),
-                                           adapter.getQuery());
+      return new OrmliteCursorLoader<>(getActivity(), dbHelper.getPlaceDao(), adapter.getQuery());
     } catch (SQLException e) {
       e.printStackTrace();
     }
@@ -260,11 +261,10 @@ public class WeatherFragment extends BaseFragment
         o =
         Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace());
 
-    Subscription s = AndroidObservable.bindActivity(getActivity(), o)
-        .observeOn(uiScheduler).subscribeOn(ioScheduler)
-        .subscribe(WeatherFragment.this);
-
-    subscriptionList.add(s);
+    //Subscription s = AndroidObservable.bindActivity(getActivity(), o)
+    //    .observeOn(uiScheduler).subscribeOn(ioScheduler)
+    //    .subscribe(WeatherFragment.this);
+    //subscriptionList.add(s);
   }
 
   @Override

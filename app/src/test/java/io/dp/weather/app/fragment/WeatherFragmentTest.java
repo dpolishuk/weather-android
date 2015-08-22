@@ -68,7 +68,7 @@ public class WeatherFragmentTest {
 
   @Before
   public void setUp() throws Exception {
-    ((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
+    //((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
   }
 
   @Test

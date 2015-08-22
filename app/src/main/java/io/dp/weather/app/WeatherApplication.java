@@ -2,51 +2,23 @@ package io.dp.weather.app;
 
 import android.app.Application;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import dagger.ObjectGraph;
-
 /**
  * Created by dp on 07/10/14.
  */
 public class WeatherApplication extends Application {
 
-  private ObjectGraph objectGraph;
-  private AppModule appModule;
+  private AppComponent component;
 
   @Override
   public void onCreate() {
     super.onCreate();
 
-    appModule = new AppModule(this);
-
-    createObjectGraph();
+    this.component = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
+    component.inject(this);
   }
 
-  public void setObjectGraph(ObjectGraph objectGraph) {
-    this.objectGraph = objectGraph;
+  public AppComponent getComponent() {
+    return component;
   }
 
-  protected void createObjectGraph() {
-    setObjectGraph(ObjectGraph.create(getModules().toArray()));
-  }
-
-  public AppModule getAppModule() {
-    return appModule;
-  }
-
-  public List<Object> getModules() {
-    List<Object> modules = new ArrayList<Object>();
-    modules.add(appModule);
-    return modules;
-  }
-
-  public ObjectGraph getApplicationGraph() {
-    return objectGraph;
-  }
-
-  protected boolean isTesting() {
-    return false;
-  }
 }

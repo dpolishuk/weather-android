@@ -39,13 +39,11 @@ import static org.mockito.Mockito.mock;
  * Created by dp on 08/10/14.
  */
 
-@Module(overrides = true, library = true, injects = {WeatherFragmentTest.class})
-public class MockAppModule {
+@Module
+public class MockAppModule extends AppModule {
 
-  private Application application;
-
-  public MockAppModule(Application application) {
-    this.application = application;
+  public MockAppModule(WeatherApplication application) {
+    super(application);
   }
 
   @Provides

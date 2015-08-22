@@ -19,13 +19,7 @@ import io.dp.weather.app.fragment.WeatherFragment;
  * Created by dp on 07/10/14.
  */
 
-@Module(
-    injects = {
-        MainActivity.class,
-        WeatherFragment.class
-    },
-    addsTo = AppModule.class,
-    library = true)
+@Module
 public class ActivityModule {
 
   private final Activity activity;

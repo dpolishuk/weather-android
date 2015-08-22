@@ -30,7 +30,7 @@ import timber.log.Timber;
 /**
  * Created by dp on 07/10/14.
  */
-@Module(library = true)
+@Module
 public class AppModule {
 
   protected final Application application;
@@ -40,9 +40,9 @@ public class AppModule {
 
     Timber.plant(new Timber.DebugTree());
 
-    if (!application.isTesting()) {
-      strictMode();
-    }
+    //if (!application.isTesting()) {
+    //  strictMode();
+    //}
   }
 
   @Provides
@@ -123,7 +123,7 @@ public class AppModule {
   @Provides
   @IOScheduler
   @Singleton
-  public Scheduler provideioScheduler() {
+  public Scheduler provideIoScheduler() {
     return Schedulers.io();
   }
 
