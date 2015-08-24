@@ -4,13 +4,11 @@ import android.location.Geocoder;
 import com.google.gson.Gson;
 import com.squareup.otto.Bus;
 import dagger.Component;
-import dagger.Provides;
-import io.dp.weather.app.annotation.IOScheduler;
-import io.dp.weather.app.annotation.UIScheduler;
+import io.dp.weather.app.activity.ActivityModule;
+import io.dp.weather.app.activity.ActivitySubcomponent;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import javax.inject.Singleton;
-import rx.Scheduler;
 
 /**
  * Created by deepol on 19/08/15.
@@ -28,7 +26,5 @@ import rx.Scheduler;
 
   PlacesApi providePlacesApi();
 
-  @UIScheduler Scheduler provideUiScheduler();
-
-  @IOScheduler Scheduler provideIoScheduler();
+  ActivitySubcomponent plus(ActivityModule module);
 }

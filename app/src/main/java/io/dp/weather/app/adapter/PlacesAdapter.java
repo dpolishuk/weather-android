@@ -1,8 +1,5 @@
 package io.dp.weather.app.adapter;
 
-import com.google.gson.Gson;
-
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -17,22 +14,17 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.squareup.otto.Bus;
-import com.squareup.picasso.Picasso;
-
-import java.util.List;
-
-import javax.inject.Inject;
-
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import com.google.gson.Gson;
+import com.squareup.otto.Bus;
+import com.squareup.picasso.Picasso;
+import com.trello.rxlifecycle.components.support.RxFragmentActivity;
 import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
+import io.dp.weather.app.SchedulersManager;
 import io.dp.weather.app.WeatherIconUrl;
 import io.dp.weather.app.annotation.CachePrefs;
-import io.dp.weather.app.annotation.IOScheduler;
-import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.db.OrmliteCursorAdapter;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.DeletePlaceEvent;
@@ -43,7 +35,8 @@ import io.dp.weather.app.net.dto.WeatherDesc;
 import io.dp.weather.app.utils.MetricsController;
 import io.dp.weather.app.utils.WhiteBorderCircleTransformation;
 import io.dp.weather.app.widget.WeatherFor5DaysView;
-import rx.Scheduler;
+import java.util.List;
+import javax.inject.Inject;
 import rx.Subscriber;
 
 /**
@@ -51,29 +44,25 @@ import rx.Subscriber;
  */
 public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
-  private final Activity activity;
+  private final RxFragmentActivity activity;
   private final Gson gson;
   private final WeatherApi api;
 
   private final LayoutInflater inflater;
-  private final SharedPreferences prefs;
+  private SharedPreferences prefs;
 
   private final Bus bus;
 
   private final LruCache<Long, Forecast> cache = new LruCache<Long, Forecast>(16);
 
-  private final Scheduler uiScheduler;
-  private final Scheduler ioScheduler;
-  private final MetricsController metrics;
+  private SchedulersManager schedulersManager;
+  private MetricsController metrics;
 
   private final WhiteBorderCircleTransformation transformation = new WhiteBorderCircleTransformation();
 
   @Inject
-  public PlacesAdapter(Activity activity, Gson gson, WeatherApi api, Bus bus,
-                       MetricsController metrics,
-                       @CachePrefs SharedPreferences prefs,
-                       @UIScheduler Scheduler uiScheduler,
-                       @IOScheduler Scheduler ioScheduler) {
+  public PlacesAdapter(RxFragmentActivity activity, Gson gson, WeatherApi api, Bus bus,
+                       MetricsController metrics) {
     super(activity, null, null);
 
     this.activity = activity;
@@ -81,11 +70,19 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     this.metrics = metrics;
     this.gson = gson;
     this.api = api;
-    this.prefs = prefs;
     this.bus = bus;
-    this.uiScheduler = uiScheduler;
-    this.ioScheduler = ioScheduler;
   }
+
+  @Inject
+  public void setSharedPreferences(@CachePrefs SharedPreferences prefs) {
+    this.prefs = prefs;
+  }
+
+  @Inject
+  public void setSchedulersManager(SchedulersManager schedulersManager) {
+    this.schedulersManager = schedulersManager;
+  }
+
 
   public void clear() {
     this.cache.evictAll();
@@ -132,12 +129,10 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
         if (TextUtils.isEmpty(rawForecast)) {
           Double lat = place.getLat();
           Double lon = place.getLon();
-          //
-          //AndroidObservable
-          //    .bindActivity(activity, api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS))
-          //    .subscribeOn(ioScheduler)
-          //    .observeOn(uiScheduler)
-          //    .subscribe(new ForecastCacheSubscriber(hash));
+
+          api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS)
+              .compose(schedulersManager.applySchedulers(activity))
+              .subscribe(new ForecastCacheSubscriber(hash));
         }
       }
     } else {

@@ -20,5 +20,4 @@ public class WeatherApplication extends Application {
   public AppComponent getComponent() {
     return component;
   }
-
 }

@@ -1,27 +1,24 @@
 package io.dp.weather.app.fragment;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import com.trello.rxlifecycle.components.support.RxFragment;
 import io.dp.weather.app.activity.BaseActivity;
 
 /**
  * Created by dp on 08/10/14.
  */
-public abstract class BaseFragment extends Fragment {
+public abstract class BaseFragment extends RxFragment {
 
-  private FragmentComponent component;
+  private FragmentSubcomponent component;
 
   @Override public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
 
     BaseActivity activity = (BaseActivity) getActivity();
-    this.component = DaggerFragmentComponent.builder()
-        .activityComponent(activity.getComponent())
-        .fragmentModule(new FragmentModule(this))
-        .build();
+    this.component = activity.getComponent().plus(new FragmentModule(this));
   }
 
-  public FragmentComponent getComponent() {
+  public FragmentSubcomponent getComponent() {
     return component;
   }
 }

@@ -1,19 +1,15 @@
 package io.dp.weather.app.adapter;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import android.app.Activity;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-
-import java.util.ArrayList;
-
-import javax.inject.Inject;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.trello.rxlifecycle.components.support.RxFragmentActivity;
 import io.dp.weather.app.R;
 import io.dp.weather.app.net.PlacesApi;
+import java.util.ArrayList;
+import javax.inject.Inject;
 
 /**
  * Created by dp on 09/10/14.
@@ -24,7 +20,7 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
   private PlacesApi placesApi;
 
   @Inject
-  public PlacesAutoCompleteAdapter(Activity activity, PlacesApi placesApi) {
+  public PlacesAutoCompleteAdapter(RxFragmentActivity activity, PlacesApi placesApi) {
     super(activity, R.layout.item_search_list);
     this.placesApi = placesApi;
   }
@@ -41,9 +37,9 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
 
   @Override
   public Filter getFilter() {
-    Filter filter = new Filter() {
+    return new Filter() {
       @Override
-      protected Filter.FilterResults performFiltering(CharSequence constraint) {
+      protected FilterResults performFiltering(CharSequence constraint) {
         FilterResults filterResults = new FilterResults();
         if (constraint != null) {
           JsonObject jsonResults = placesApi.getAutocomplete(constraint.toString());
@@ -74,6 +70,5 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
         }
       }
     };
-    return filter;
   }
 }

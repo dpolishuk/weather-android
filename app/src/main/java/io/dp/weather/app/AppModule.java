@@ -1,30 +1,21 @@
 package io.dp.weather.app;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import android.app.Application;
 import android.location.Geocoder;
 import android.os.StrictMode;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 import com.squareup.picasso.Picasso;
-
-import javax.inject.Singleton;
-
 import dagger.Module;
 import dagger.Provides;
-import io.dp.weather.app.annotation.IOScheduler;
-import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.utils.AsyncBus;
+import javax.inject.Singleton;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
-import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -111,20 +102,6 @@ public class AppModule {
   @Singleton
   public Bus provideBus() {
     return new AsyncBus(ThreadEnforcer.ANY);
-  }
-
-  @Provides
-  @UIScheduler
-  @Singleton
-  public Scheduler provideUiScheduler() {
-    return AndroidSchedulers.mainThread();
-  }
-
-  @Provides
-  @IOScheduler
-  @Singleton
-  public Scheduler provideIoScheduler() {
-    return Schedulers.io();
   }
 
   private void strictMode() {

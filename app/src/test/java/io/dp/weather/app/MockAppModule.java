@@ -1,29 +1,22 @@
 package io.dp.weather.app;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Geocoder;
 import android.preference.PreferenceManager;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.otto.Bus;
-
-import javax.inject.Singleton;
-
 import dagger.Module;
 import dagger.Provides;
 import io.dp.weather.app.annotation.CachePrefs;
 import io.dp.weather.app.annotation.ConfigPrefs;
-import io.dp.weather.app.annotation.IOScheduler;
-import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.db.DatabaseHelper;
-import io.dp.weather.app.fragment.WeatherFragmentTest;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import io.dp.weather.app.net.dto.Forecast;
+import javax.inject.Singleton;
 import retrofit.MockRestAdapter;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;

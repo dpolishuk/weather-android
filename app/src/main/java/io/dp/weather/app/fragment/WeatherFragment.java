@@ -1,6 +1,5 @@
 package io.dp.weather.app.fragment;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Geocoder;
@@ -14,28 +13,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import com.etsy.android.grid.StaggeredGridView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import butterknife.ButterKnife;
-import butterknife.InjectView;
 import io.dp.weather.app.R;
+import io.dp.weather.app.SchedulersManager;
 import io.dp.weather.app.activity.SettingsActivity;
 import io.dp.weather.app.adapter.PlacesAdapter;
 import io.dp.weather.app.adapter.PlacesAutoCompleteAdapter;
-import io.dp.weather.app.annotation.IOScheduler;
-import io.dp.weather.app.annotation.UIScheduler;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.OrmliteCursorLoader;
 import io.dp.weather.app.db.Queries;
@@ -44,9 +32,12 @@ import io.dp.weather.app.event.AddPlaceEvent;
 import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.event.UpdateListEvent;
 import io.dp.weather.app.utils.Observables;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
 import rx.Observable;
 import rx.Observer;
-import rx.Scheduler;
 import rx.Subscription;
 //import rx.android.observables.AndroidObservable;
 
@@ -74,13 +65,7 @@ public class WeatherFragment extends BaseFragment
   @Inject
   PlacesAutoCompleteAdapter placesAutoCompleteAdapter;
 
-  @Inject
-  @UIScheduler
-  Scheduler uiScheduler;
-
-  @Inject
-  @IOScheduler
-  Scheduler ioScheduler;
+  @Inject SchedulersManager schedulersManager;
 
   @InjectView(R.id.grid)
   StaggeredGridView gridView;
