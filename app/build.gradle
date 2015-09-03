@@ -73,7 +73,6 @@ dependencies {
 
     compile 'com.trello:rxlifecycle:0.2.0'
     compile 'com.trello:rxlifecycle-components:0.2.0'
-//    compile 'com.pushtorefresh.storio:sqlite:1.2.1'
 
     provided 'org.glassfish:javax.annotation:10.0-b28'
 

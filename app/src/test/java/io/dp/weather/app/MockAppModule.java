@@ -22,9 +22,7 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.http.Query;
 import rx.Observable;
-import rx.Scheduler;
 import rx.Subscriber;
-import rx.schedulers.Schedulers;
 
 import static org.mockito.Mockito.mock;
 
@@ -43,20 +41,6 @@ public class MockAppModule extends AppModule {
   @Singleton
   public Application provideApplication() {
     return application;
-  }
-
-  @Provides
-  @UIScheduler
-  @Singleton
-  public Scheduler provideUiScheduler() {
-    return Schedulers.immediate();
-  }
-
-  @Provides
-  @IOScheduler
-  @Singleton
-  public Scheduler provideioScheduler() {
-    return Schedulers.immediate();
   }
 
   @Provides

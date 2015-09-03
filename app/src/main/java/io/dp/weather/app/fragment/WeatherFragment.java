@@ -1,11 +1,13 @@
 package io.dp.weather.app.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -13,12 +15,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import com.etsy.android.grid.StaggeredGridView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import io.dp.weather.app.R;
 import io.dp.weather.app.SchedulersManager;
 import io.dp.weather.app.activity.SettingsActivity;
@@ -36,59 +40,48 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
-import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-//import rx.android.observables.AndroidObservable;
 
 /**
  * Created by dp on 08/10/14.
  */
 public class WeatherFragment extends BaseFragment
     implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener,
-               Observer<Place> {
+    Observer<Place> {
 
   List<Subscription> subscriptionList = new ArrayList<Subscription>();
 
-  @Inject
-  Geocoder geocoder;
+  @Inject Geocoder geocoder;
 
-  @Inject
-  PlacesAdapter adapter;
+  @Inject PlacesAdapter adapter;
 
-  @Inject
-  DatabaseHelper dbHelper;
+  @Inject DatabaseHelper dbHelper;
 
-  @Inject
-  Bus bus;
+  @Inject Bus bus;
 
-  @Inject
-  PlacesAutoCompleteAdapter placesAutoCompleteAdapter;
+  @Inject PlacesAutoCompleteAdapter placesAutoCompleteAdapter;
 
   @Inject SchedulersManager schedulersManager;
 
-  @InjectView(R.id.grid)
-  StaggeredGridView gridView;
+  @InjectView(R.id.grid) StaggeredGridView gridView;
 
-  @InjectView(R.id.swipe_layout)
-  SwipeRefreshLayout swipeRefreshView;
+  @InjectView(R.id.swipe_layout) SwipeRefreshLayout swipeRefreshView;
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                           Bundle savedInstanceState) {
+  @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
+      Bundle savedInstanceState) {
 
     View v = inflater.inflate(R.layout.fragment_weather, container, false);
     ButterKnife.inject(this, v);
 
     swipeRefreshView.setOnRefreshListener(this);
     swipeRefreshView.setColorSchemeResources(R.color.refresh_color_0, R.color.refresh_color_1,
-                                             R.color.refresh_color_2, R.color.refresh_color_3);
+        R.color.refresh_color_2, R.color.refresh_color_3);
 
     return v;
   }
 
-  @Override
-  public void onActivityCreated(Bundle savedInstanceState) {
+  @Override public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
 
     getComponent().inject(this);
@@ -103,22 +96,19 @@ public class WeatherFragment extends BaseFragment
     setHasOptionsMenu(true);
   }
 
-  @Override
-  public void onResume() {
+  @Override public void onResume() {
     super.onResume();
     bus.register(this);
 
     adapter.notifyDataSetChanged();
   }
 
-  @Override
-  public void onPause() {
+  @Override public void onPause() {
     super.onPause();
     bus.unregister(this);
   }
 
-  @Override
-  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+  @Override public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
 
     inflater.inflate(R.menu.main, menu);
@@ -126,46 +116,24 @@ public class WeatherFragment extends BaseFragment
     final MenuItem addItem = menu.findItem(R.id.action_add);
 
     final AutoCompleteTextView addView = (AutoCompleteTextView) addItem.getActionView();
-    //addItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-    //  @Override
-    //  public boolean onMenuItemActionExpand(MenuItem menuItem) {
-    //    addView.post(new Runnable() {
-    //      @Override
-    //      public void run() {
-    //        addView.requestFocus();
-    //        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-    //            Context.INPUT_METHOD_SERVICE);
-    //        imm.showSoftInput(addView, InputMethodManager.SHOW_IMPLICIT);
-    //      }
-    //    });
-    //    return true;
-    //  }
-    //
-    //  @Override
-    //  public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-    //    return true;
-    //  }
-    //});
+    MenuItemCompat.setOnActionExpandListener(addItem, new MenuItemCompat.OnActionExpandListener() {
+      @Override public boolean onMenuItemActionExpand(MenuItem item) {
+        addView.post(() -> {
+          addView.requestFocus();
+          InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
+              Context.INPUT_METHOD_SERVICE);
+          imm.showSoftInput(addView, InputMethodManager.SHOW_IMPLICIT);
+        });
+        return true;
+      }
 
-    //ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
-    //    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-    //
-    //addView.setLayoutParams(params);
-    //addView.setAdapter(placesAutoCompleteAdapter);
-    //addView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-    //  @Override
-    //  public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    //    final String lookupPlace = (String) parent.getItemAtPosition(position);
-    //    addItem.collapseActionView();
-    //    addView.setText("");
-    //
-    //    bus.post(new AddPlaceEvent(lookupPlace));
-    //  }
-    //});
+      @Override public boolean onMenuItemActionCollapse(MenuItem item) {
+        return true;
+      }
+    });
   }
 
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
+  @Override public boolean onOptionsItemSelected(MenuItem item) {
     int id = item.getItemId();
     switch (id) {
       case R.id.action_add:
@@ -178,8 +146,7 @@ public class WeatherFragment extends BaseFragment
     return super.onOptionsItemSelected(item);
   }
 
-  @Override
-  public void onDestroyView() {
+  @Override public void onDestroyView() {
     super.onDestroyView();
 
     for (Subscription s : subscriptionList) {
@@ -187,8 +154,7 @@ public class WeatherFragment extends BaseFragment
     }
   }
 
-  @Override
-  public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+  @Override public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 
     try {
       return new OrmliteCursorLoader<>(getActivity(), dbHelper.getPlaceDao(), adapter.getQuery());
@@ -199,37 +165,31 @@ public class WeatherFragment extends BaseFragment
     return null;
   }
 
-  @Override
-  public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+  @Override public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
     adapter.changeCursor(cursor);
     gridView.post(new Runnable() {
-      @Override
-      public void run() {
+      @Override public void run() {
         gridView.setSelection(gridView.getCount() - 1);
       }
     });
   }
 
-  @Override
-  public void onLoaderReset(Loader<Cursor> loader) {
+  @Override public void onLoaderReset(Loader<Cursor> loader) {
     adapter.changeCursor(null);
   }
 
-  @Override
-  public void onRefresh() {
+  @Override public void onRefresh() {
     swipeRefreshView.setRefreshing(true);
     adapter.clear();
     adapter.notifyDataSetChanged();
     swipeRefreshView.setRefreshing(false);
   }
 
-  @Subscribe
-  public void onUpdateList(UpdateListEvent event) {
+  @Subscribe public void onUpdateList(UpdateListEvent event) {
     getLoaderManager().restartLoader(0, null, this);
   }
 
-  @Subscribe
-  public void onDeletePlace(DeletePlaceEvent event) {
+  @Subscribe public void onDeletePlace(DeletePlaceEvent event) {
     if (event.getId() != null) {
       try {
         dbHelper.getPlaceDao().deleteById(event.getId());
@@ -240,30 +200,21 @@ public class WeatherFragment extends BaseFragment
     }
   }
 
-  @Subscribe
-  public void onAddPlace(AddPlaceEvent event) {
-    Observable<Place>
-        o =
-        Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace());
-
-    //Subscription s = AndroidObservable.bindActivity(getActivity(), o)
-    //    .observeOn(uiScheduler).subscribeOn(ioScheduler)
-    //    .subscribe(WeatherFragment.this);
-    //subscriptionList.add(s);
+  @Subscribe public void onAddPlace(AddPlaceEvent event) {
+    Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace())
+        .compose(schedulersManager.applySchedulers((RxAppCompatActivity) getActivity()))
+        .subscribe(WeatherFragment.this);
   }
 
-  @Override
-  public void onCompleted() {
+  @Override public void onCompleted() {
 
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
 
   }
 
-  @Override
-  public void onNext(Place place) {
+  @Override public void onNext(Place place) {
     bus.post(new UpdateListEvent());
   }
 }

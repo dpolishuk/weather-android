@@ -1,6 +1,6 @@
 package io.dp.weather.app;
 
-import com.trello.rxlifecycle.components.support.RxFragmentActivity;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import rx.Observable;
@@ -23,7 +23,7 @@ public class SchedulersManager {
     this.uiScheduler = AndroidSchedulers.mainThread();
   }
 
-  public <T> Observable.Transformer<T, T> applySchedulers(RxFragmentActivity activity) {
+  public <T> Observable.Transformer<T, T> applySchedulers(RxAppCompatActivity activity) {
     return observable -> ((Observable) observable).subscribeOn(ioScheduler)
         .observeOn(uiScheduler)
         .compose(activity.bindToLifecycle());

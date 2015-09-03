@@ -19,7 +19,7 @@ import butterknife.InjectView;
 import com.google.gson.Gson;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
-import com.trello.rxlifecycle.components.support.RxFragmentActivity;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.SchedulersManager;
@@ -44,7 +44,7 @@ import rx.Subscriber;
  */
 public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
-  private final RxFragmentActivity activity;
+  private final RxAppCompatActivity activity;
   private final Gson gson;
   private final WeatherApi api;
 
@@ -61,7 +61,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
   private final WhiteBorderCircleTransformation transformation = new WhiteBorderCircleTransformation();
 
   @Inject
-  public PlacesAdapter(RxFragmentActivity activity, Gson gson, WeatherApi api, Bus bus,
+  public PlacesAdapter(RxAppCompatActivity activity, Gson gson, WeatherApi api, Bus bus,
                        MetricsController metrics) {
     super(activity, null, null);
 
