@@ -9,15 +9,19 @@ public class WeatherApplication extends Application {
 
   private AppComponent component;
 
-  @Override
-  public void onCreate() {
+  @Override public void onCreate() {
     super.onCreate();
 
-    this.component = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
-    component.inject(this);
+    this.component = createComponent();
   }
 
   public AppComponent getComponent() {
     return component;
+  }
+
+  public AppComponent createComponent() {
+    return DaggerAppComponent.builder()
+        .appModule(new AppModule(this))
+        .build();
   }
 }

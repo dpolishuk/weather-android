@@ -9,16 +9,22 @@ import io.dp.weather.app.WeatherApplication;
  */
 public abstract class BaseActivity extends RxAppCompatActivity {
 
-  private ActivitySubcomponent component;
+  private BaseActivityComponent component;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    WeatherApplication app = (WeatherApplication) getApplication();
-    this.component = app.getComponent().plus(new ActivityModule(this));
+    this.component = createComponent();
   }
 
-  public ActivitySubcomponent getComponent() {
+  public BaseActivityComponent getComponent() {
     return component;
+  }
+
+  protected BaseActivityComponent createComponent() {
+    WeatherApplication app = (WeatherApplication) getApplication();
+    return DaggerActivityComponent.builder()
+        .appComponent(app.getComponent())
+        .activityModule(new ActivityModule(this))
+        .build();
   }
 }

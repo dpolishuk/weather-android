@@ -1,7 +1,6 @@
 package io.dp.weather.app.net;
 
 import com.google.gson.JsonObject;
-
 import retrofit.http.GET;
 import retrofit.http.Query;
 

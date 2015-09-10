@@ -58,47 +58,44 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
   private SchedulersManager schedulersManager;
   private MetricsController metrics;
 
-  private final WhiteBorderCircleTransformation transformation = new WhiteBorderCircleTransformation();
+  private final WhiteBorderCircleTransformation transformation =
+      new WhiteBorderCircleTransformation();
 
-  @Inject
-  public PlacesAdapter(RxAppCompatActivity activity, Gson gson, WeatherApi api, Bus bus,
-                       MetricsController metrics) {
+  @Inject public PlacesAdapter(RxAppCompatActivity activity, Gson gson, WeatherApi api, Bus bus) {
     super(activity, null, null);
 
     this.activity = activity;
     this.inflater = LayoutInflater.from(activity);
-    this.metrics = metrics;
     this.gson = gson;
     this.api = api;
     this.bus = bus;
   }
 
-  @Inject
-  public void setSharedPreferences(@CachePrefs SharedPreferences prefs) {
+  @Inject public void setMetricsController(MetricsController metrics) {
+    this.metrics = metrics;
+  }
+
+  @Inject public void setSharedPreferences(@CachePrefs SharedPreferences prefs) {
     this.prefs = prefs;
   }
 
-  @Inject
-  public void setSchedulersManager(SchedulersManager schedulersManager) {
+  @Inject public void setSchedulersManager(SchedulersManager schedulersManager) {
     this.schedulersManager = schedulersManager;
   }
-
 
   public void clear() {
     this.cache.evictAll();
     this.prefs.edit().clear().apply();
   }
 
-  @Override
-  public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
+  @Override public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
     View v = this.inflater.inflate(R.layout.item_city_weather, viewGroup, false);
     ViewHolder holder = new ViewHolder(v);
     v.setTag(holder);
     return v;
   }
 
-  @Override
-  public void bindView(View itemView, Context context, final Place place) {
+  @Override public void bindView(View itemView, Context context, final Place place) {
     ViewHolder holder = (ViewHolder) itemView.getTag();
 
     final String hash = String.valueOf(place.hashCode());
@@ -115,26 +112,18 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     }
 
     long lastRequestTime = prefs.getLong(hash + "_time", -1);
-    if (lastRequestTime == -1 ||
-        (lastRequestTime > 0 &&
-         (System.currentTimeMillis() - lastRequestTime) > DateUtils.DAY_IN_MILLIS)) {
+    if (lastRequestTime == -1 || (lastRequestTime > 0
+        && (System.currentTimeMillis() - lastRequestTime) > DateUtils.DAY_IN_MILLIS)) {
 
       holder.progressView.setVisibility(View.VISIBLE);
       holder.contentView.setVisibility(View.GONE);
 
-      String rawForecast = prefs.getString(hash, null);
+      Double lat = place.getLat();
+      Double lon = place.getLon();
 
-      // So, forecast is expired or it doesn't exist - let's go to fetch it
-      if (!TextUtils.isEmpty(hash)) {
-        if (TextUtils.isEmpty(rawForecast)) {
-          Double lat = place.getLat();
-          Double lon = place.getLon();
-
-          api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS)
-              .compose(schedulersManager.applySchedulers(activity))
-              .subscribe(new ForecastCacheSubscriber(hash));
-        }
-      }
+      api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS)
+          .compose(schedulersManager.applySchedulers(activity))
+          .subscribe(new ForecastCacheSubscriber(hash));
     } else {
       holder.progressView.setVisibility(View.GONE);
       holder.contentView.setVisibility(View.VISIBLE);
@@ -157,7 +146,8 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
           int pressure = Integer.valueOf(condition.getPressure());
 
           if (metrics.useMmhg()) {
-            holder.pressureView.setText(context.getString(R.string.fmt_pressure_mmhg, (int) (pressure * Const.CONVERT_MMHG)));
+            holder.pressureView.setText(context.getString(R.string.fmt_pressure_mmhg,
+                (int) (pressure * Const.CONVERT_MMHG)));
           } else {
             holder.pressureView.setText(context.getString(R.string.fmt_pressure_kpa, pressure));
           }
@@ -191,14 +181,15 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
         if (urls != null && urls.size() > 0) {
           String url = urls.get(0).getValue();
-          Picasso.with(activity).load(!TextUtils.isEmpty(url) ? url : null)
+          Picasso.with(activity)
+              .load(!TextUtils.isEmpty(url) ? url : null)
               .transform(transformation)
               .into(holder.weatherState);
         }
       }
 
-      holder.weatherFor5DaysView
-          .setWeatherForWeek(f.getData().getWeather(), metrics.useCelsius(), transformation);
+      holder.weatherFor5DaysView.setWeatherForWeek(f.getData().getWeather(), metrics.useCelsius(),
+          transformation);
     }
   }
 
@@ -210,34 +201,28 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
       this.hash = hash;
     }
 
-    @Override
-    public void onCompleted() {
+    @Override public void onCompleted() {
     }
 
-    @Override
-    public void onError(Throwable e) {
+    @Override public void onError(Throwable e) {
     }
 
-    @Override
-    public void onNext(Forecast forecast) {
+    @Override public void onNext(Forecast forecast) {
       prefs.edit().putLong(hash + "_time", System.currentTimeMillis()).apply();
-      prefs.edit().putString(hash, gson.toJson(forecast))
-          .apply();
+      prefs.edit().putString(hash, gson.toJson(forecast)).apply();
       notifyDataSetChanged();
     }
   }
 
   View.OnClickListener popupOnClickListener = new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
+    @Override public void onClick(View v) {
       final Long id = (Long) v.getTag();
 
       PopupMenu popupMenu = new PopupMenu(activity, v);
       popupMenu.inflate(R.menu.item_place);
 
       popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-        @Override
-        public boolean onMenuItemClick(MenuItem item) {
+        @Override public boolean onMenuItemClick(MenuItem item) {
           bus.post(new DeletePlaceEvent(id));
           return true;
         }
@@ -247,44 +232,31 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
     }
   };
 
-
   static class ViewHolder {
 
-    @InjectView(R.id.weather_state)
-    ImageView weatherState;
+    @InjectView(R.id.weather_state) ImageView weatherState;
 
-    @InjectView(R.id.city_name)
-    TextView cityName;
+    @InjectView(R.id.city_name) TextView cityName;
 
-    @InjectView(R.id.weather_for_week)
-    WeatherFor5DaysView weatherFor5DaysView;
+    @InjectView(R.id.weather_for_week) WeatherFor5DaysView weatherFor5DaysView;
 
-    @InjectView(R.id.temperature)
-    TextView temperatureView;
+    @InjectView(R.id.temperature) TextView temperatureView;
 
-    @InjectView(R.id.degrees_type)
-    TextView degreeTypeView;
+    @InjectView(R.id.degrees_type) TextView degreeTypeView;
 
-    @InjectView(R.id.weather_description)
-    TextView weatherDescView;
+    @InjectView(R.id.weather_description) TextView weatherDescView;
 
-    @InjectView(R.id.progress)
-    ProgressBar progressView;
+    @InjectView(R.id.progress) ProgressBar progressView;
 
-    @InjectView(R.id.content)
-    View contentView;
+    @InjectView(R.id.content) View contentView;
 
-    @InjectView(R.id.menu)
-    View menuView;
+    @InjectView(R.id.menu) View menuView;
 
-    @InjectView(R.id.humidity)
-    TextView humidityView;
+    @InjectView(R.id.humidity) TextView humidityView;
 
-    @InjectView(R.id.pressure)
-    TextView pressureView;
+    @InjectView(R.id.pressure) TextView pressureView;
 
-    @InjectView(R.id.wind)
-    TextView windView;
+    @InjectView(R.id.wind) TextView windView;
 
     ViewHolder(View view) {
       ButterKnife.inject(this, view);

@@ -25,7 +25,9 @@ import com.squareup.otto.Subscribe;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import io.dp.weather.app.R;
 import io.dp.weather.app.SchedulersManager;
+import io.dp.weather.app.activity.ActivityComponent;
 import io.dp.weather.app.activity.SettingsActivity;
+import io.dp.weather.app.activity.debug.DebugActivity;
 import io.dp.weather.app.adapter.PlacesAdapter;
 import io.dp.weather.app.adapter.PlacesAutoCompleteAdapter;
 import io.dp.weather.app.db.DatabaseHelper;
@@ -43,14 +45,9 @@ import javax.inject.Inject;
 import rx.Observer;
 import rx.Subscription;
 
-/**
- * Created by dp on 08/10/14.
- */
 public class WeatherFragment extends BaseFragment
     implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener,
     Observer<Place> {
-
-  List<Subscription> subscriptionList = new ArrayList<Subscription>();
 
   @Inject Geocoder geocoder;
 
@@ -68,6 +65,12 @@ public class WeatherFragment extends BaseFragment
 
   @InjectView(R.id.swipe_layout) SwipeRefreshLayout swipeRefreshView;
 
+  List<Subscription> subscriptionList = new ArrayList<>();
+
+  public static WeatherFragment newInstance() {
+    return new WeatherFragment();
+  }
+
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
 
@@ -75,8 +78,6 @@ public class WeatherFragment extends BaseFragment
     ButterKnife.inject(this, v);
 
     swipeRefreshView.setOnRefreshListener(this);
-    swipeRefreshView.setColorSchemeResources(R.color.refresh_color_0, R.color.refresh_color_1,
-        R.color.refresh_color_2, R.color.refresh_color_3);
 
     return v;
   }
@@ -84,7 +85,7 @@ public class WeatherFragment extends BaseFragment
   @Override public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
 
-    getComponent().inject(this);
+    ((ActivityComponent) getComponent()).inject(this);
 
     setRetainInstance(true);
 
@@ -141,6 +142,10 @@ public class WeatherFragment extends BaseFragment
 
       case R.id.action_settings:
         startActivity(new Intent(getActivity(), SettingsActivity.class));
+        return true;
+
+      case R.id.action_debug:
+        startActivity(new Intent(getActivity(), DebugActivity.class));
         return true;
     }
     return super.onOptionsItemSelected(item);

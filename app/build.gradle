@@ -3,100 +3,98 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "22.0.1"
+  compileSdkVersion 23
+  buildToolsVersion "22.0.1"
 
-    defaultConfig {
-        applicationId "io.dp.weather.app"
-        minSdkVersion 14
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  defaultConfig {
+    applicationId "io.dp.weather.app"
+    minSdkVersion 14
+    targetSdkVersion 23
+    versionCode 1
+    versionName "1.0"
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        buildConfigField "int", "DATABASE_VERSION", "1";
-        buildConfigField "String", "FORECAST_API_URL",
-                         "\"https://api.worldweatheronline.com/free/v1/\""
-        buildConfigField "String", "FORECAST_API_KEY",
-                         "\"499cb12ae4fc7740adee2fa7b2007982f75338c0\""
-        buildConfigField "String", "PLACES_API_URL", "\"https://maps.googleapis.com/maps/api/\""
-        buildConfigField "String", "PLACES_API_KEY", "\"AIzaSyA0o8WdYc40tWfRrKimdAWHvaFwW8h-N8w\""
+    buildConfigField "int", "DATABASE_VERSION", "1";
+    buildConfigField "String", "FORECAST_API_URL",
+        "\"https://api.worldweatheronline.com/free/v1/\""
+    buildConfigField "String", "FORECAST_API_KEY",
+        "\"499cb12ae4fc7740adee2fa7b2007982f75338c0\""
+    buildConfigField "String", "PLACES_API_URL", "\"https://maps.googleapis.com/maps/api/\""
+    buildConfigField "String", "PLACES_API_KEY", "\"AIzaSyA0o8WdYc40tWfRrKimdAWHvaFwW8h-N8w\""
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  signingConfigs {
+    release {
+      storeFile file("my-release-key.keystore")
+      storePassword "12345678"
+      keyAlias "alias_name"
+      keyPassword "12345678"
     }
+  }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+  buildTypes {
+    release {
+      signingConfig signingConfigs.release
     }
+  }
 
-    signingConfigs {
-        release {
-            storeFile file("my-release-key.keystore")
-            storePassword "12345678"
-            keyAlias "alias_name"
-            keyPassword "12345678"
-        }
-    }
+  packagingOptions {
+    exclude 'META-INF/services/javax.annotation.processing.Processor'
+  }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-        }
-    }
-
-    packagingOptions {
-        exclude 'META-INF/services/javax.annotation.processing.Processor'
-    }
-
-    sourceSets {
-        androidTest {
-            setRoot('src/test')
-        }
-    }
-
+  sourceSets {
+    androidTest.java.srcDirs += "src/test/java"
+  }
 }
-
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+  compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    compile 'com.android.support:support-v4:23.0.0'
-    compile 'com.android.support:appcompat-v7:23.0.0'
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'com.google.dagger:dagger:2.0.1'
-    apt 'com.google.dagger:dagger-compiler:2.0.1'
-    compile 'com.jakewharton:butterknife:6.1.0'
-    compile 'com.squareup.picasso:picasso:2.3.4'
-    compile 'io.reactivex:rxandroid:1.0.1'
-    compile 'com.squareup:otto:1.3.6'
-    compile 'com.jakewharton.timber:timber:2.4.1'
-    compile 'com.etsy.android.grid:library:1.0.5'
-    compile 'com.j256.ormlite:ormlite-android:4.48'
+  compile 'com.android.support:support-v4:23.0.0'
+  compile 'com.android.support:appcompat-v7:23.0.0'
+  compile 'com.squareup.retrofit:retrofit:1.9.0'
+  compile 'com.google.dagger:dagger:2.0.1'
+  apt 'com.google.dagger:dagger-compiler:2.0.1'
+  compile 'com.jakewharton:butterknife:6.1.0'
+  compile 'com.squareup.picasso:picasso:2.3.4'
+  compile 'io.reactivex:rxandroid:1.0.1'
+  compile 'com.squareup:otto:1.3.6'
+  compile 'com.jakewharton.timber:timber:2.4.1'
+  compile 'com.etsy.android.grid:library:1.0.5'
+  compile 'com.j256.ormlite:ormlite-android:4.48'
 
-    compile 'com.trello:rxlifecycle:0.2.0'
-    compile 'com.trello:rxlifecycle-components:0.2.0'
+  compile 'com.trello:rxlifecycle:0.2.0'
+  compile 'com.trello:rxlifecycle-components:0.2.0'
 
-    provided 'org.glassfish:javax.annotation:10.0-b28'
+  provided 'org.glassfish:javax.annotation:10.0-b28'
 
-    // Espresso
-    testCompile 'org.hamcrest:hamcrest-integration:1.1'
-    testCompile 'org.hamcrest:hamcrest-core:1.1'
-    testCompile 'org.hamcrest:hamcrest-library:1.1'
-    testCompile 'junit:junit:4.11'
-    testCompile 'org.robolectric:robolectric:2.4'
-    testCompile 'com.squareup:fest-android:1.0.8'
-    testCompile 'com.squareup.retrofit:retrofit-mock:1.9.0'
-    testCompile 'org.mockito:mockito-all:1.9.5'
+  // Espresso
+  testCompile 'org.hamcrest:hamcrest-integration:1.1'
+  testCompile 'org.hamcrest:hamcrest-core:1.1'
+  testCompile 'org.hamcrest:hamcrest-library:1.1'
+  testCompile 'junit:junit:4.11'
+  testCompile 'com.squareup:fest-android:1.0.8'
+  testCompile 'com.squareup.retrofit:retrofit-mock:1.9.0'
+  testCompile 'org.mockito:mockito-all:1.9.5'
+
+  testCompile 'org.robolectric:robolectric:3.0'
+  testCompile 'org.robolectric:shadows-support-v4:3.0'
 }
 
 android {
-    lintOptions {
-        abortOnError false
-    }
+  lintOptions {
+    abortOnError false
+  }
 }
 
 apply plugin: 'idea'
 
 idea {
-    module {
-        testOutputDir = file('build/test-classes/debug')
-    }
+  module {
+    testOutputDir = file('build/test-classes/debug')
+  }
 }

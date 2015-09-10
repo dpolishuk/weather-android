@@ -6,33 +6,27 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.view.View;
 import android.widget.TextView;
-
 import com.squareup.otto.Bus;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
+import io.dp.weather.app.BuildConfig;
 import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
-import io.dp.weather.app.TestUtils;
-import io.dp.weather.app.TestWeatherApplication;
+import io.dp.weather.app.activity.debug.DebugActivity;
 import io.dp.weather.app.annotation.ConfigPrefs;
 import io.dp.weather.app.db.DatabaseHelper;
-import io.dp.weather.app.db.FixedShadowSQLiteOpenHelper;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.AddPlaceEvent;
 import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.net.WeatherApi;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.support.v4.SupportFragmentTestUtil;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -43,38 +37,29 @@ import static org.mockito.Mockito.when;
  * Created by dp on 10/10/14.
  */
 
-@Config(emulateSdk = 18, shadows = FixedShadowSQLiteOpenHelper.class)
-@RunWith(RobolectricTestRunner.class)
-public class WeatherFragmentTest {
+@Config(constants = BuildConfig.class, sdk = 18, shadows = { ShadowSwipeRefreshLayout.class })
+@RunWith(RobolectricGradleTestRunner.class) public class WeatherFragmentTest {
 
-  @Inject
-  WeatherApi weatherApi;
+  @Inject WeatherApi weatherApi;
 
-  @Inject
-  Application app;
+  @Inject Application app;
 
-  @Inject
-  Bus bus;
+  @Inject Bus bus;
 
-  @Inject
-  Geocoder geocoder;
+  @Inject Geocoder geocoder;
 
-  @Inject
-  DatabaseHelper databaseHelper;
+  @Inject DatabaseHelper databaseHelper;
 
-  @Inject
-  @ConfigPrefs
-  SharedPreferences prefs;
+  @Inject @ConfigPrefs SharedPreferences prefs;
 
-  @Before
-  public void setUp() throws Exception {
+  @Before public void setUp() throws Exception {
     //((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
   }
 
-  @Test
-  public void testAddRemovePlaceFragment() throws Exception {
-    WeatherFragment f = new WeatherFragment();
-    TestUtils.startWeatherFragment(f);
+  @Test public void testAddRemovePlaceFragment() throws Exception {
+    WeatherFragment f = WeatherFragment.newInstance();
+
+    SupportFragmentTestUtil.startFragment(f, DebugActivity.class);
     assertNotNull(f);
     assertNotNull(f.adapter);
 
@@ -108,13 +93,11 @@ public class WeatherFragmentTest {
     List<Place> placeList = databaseHelper.getPlaceDao().queryForAll();
     assertEquals(4, placeList.size());
     assertEquals(4, f.adapter.getCount());
-
   }
 
-  @Test
-  public void testMetrics() throws Exception {
-    WeatherFragment f = new WeatherFragment();
-    TestUtils.startWeatherFragment(f);
+  @Test public void testMetrics() throws Exception {
+    WeatherFragment f = WeatherFragment.newInstance();
+    SupportFragmentTestUtil.startFragment(f, DebugActivity.class);
     assertNotNull(f);
     assertNotNull(f.adapter);
 

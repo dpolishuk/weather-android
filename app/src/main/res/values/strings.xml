@@ -21,5 +21,7 @@
     <string name="fmt_pressure_kpa">%1$d kPa</string>
     <string name="celcius">C˚</string>
     <string name="fahrenheit">F˚</string>
+    <string name="title_activity_debug">DebugActivity</string>
+    <string name="action_debug">Debug</string>
 
 </resources>

@@ -2,7 +2,6 @@ package io.dp.weather.app.utils;
 
 import android.os.Handler;
 import android.os.Looper;
-
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
@@ -13,8 +12,8 @@ public class AsyncBus extends Bus {
 
   private final Handler mainThread = new Handler(Looper.getMainLooper());
 
-  public AsyncBus(ThreadEnforcer enforcer) {
-    super(enforcer);
+  public AsyncBus(ThreadEnforcer enforcer, String name) {
+    super(enforcer, name);
   }
 
   @Override
