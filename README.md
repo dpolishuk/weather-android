@@ -39,7 +39,3 @@ Applications consists of two screens:
  2. settings activity where the user can specify Temperature Units (Celcius or Fahrenheit)
 
 Small clarification: To refresh weathers list - just pull down (I used SwipeRefreshLayout from support library)
-
-### Dependencies graph ###
-
-![DEPENDENCIES_IMG](weather-android/raw/0b2d9f03707e9a6dd1f12bf2e7a882d9b2ce4a76/dependency-graph.png)
