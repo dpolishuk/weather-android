@@ -6,17 +6,17 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.view.View;
 import android.widget.TextView;
-import com.squareup.otto.Bus;
 import io.dp.weather.app.BuildConfig;
 import io.dp.weather.app.Const;
+import io.dp.weather.app.MockAppComponent;
 import io.dp.weather.app.R;
-import io.dp.weather.app.activity.debug.DebugActivity;
+import io.dp.weather.app.TestApp;
+import io.dp.weather.app.activity.BaseActivity;
 import io.dp.weather.app.annotation.ConfigPrefs;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.AddPlaceEvent;
 import io.dp.weather.app.event.DeletePlaceEvent;
-import io.dp.weather.app.net.WeatherApi;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,8 @@ import javax.inject.Inject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.support.v4.SupportFragmentTestUtil;
 
@@ -37,14 +38,14 @@ import static org.mockito.Mockito.when;
  * Created by dp on 10/10/14.
  */
 
-@Config(constants = BuildConfig.class, sdk = 18, shadows = { ShadowSwipeRefreshLayout.class })
-@RunWith(RobolectricGradleTestRunner.class) public class WeatherFragmentTest {
-
-  @Inject WeatherApi weatherApi;
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class,
+    application = TestApp.class,
+    manifest=Config.NONE,
+    sdk = 21)
+public class WeatherFragmentTest {
 
   @Inject Application app;
-
-  @Inject Bus bus;
 
   @Inject Geocoder geocoder;
 
@@ -53,13 +54,15 @@ import static org.mockito.Mockito.when;
   @Inject @ConfigPrefs SharedPreferences prefs;
 
   @Before public void setUp() throws Exception {
-    //((TestWeatherApplication) Robolectric.application).getApplicationGraph().inject(this);
+    TestApp app = ((TestApp) RuntimeEnvironment.application);
+
+    ((MockAppComponent) app.getComponent()).inject(this);
   }
 
   @Test public void testAddRemovePlaceFragment() throws Exception {
     WeatherFragment f = WeatherFragment.newInstance();
 
-    SupportFragmentTestUtil.startFragment(f, DebugActivity.class);
+    SupportFragmentTestUtil.startFragment(f, BaseActivity.class);
     assertNotNull(f);
     assertNotNull(f.adapter);
 
@@ -97,7 +100,7 @@ import static org.mockito.Mockito.when;
 
   @Test public void testMetrics() throws Exception {
     WeatherFragment f = WeatherFragment.newInstance();
-    SupportFragmentTestUtil.startFragment(f, DebugActivity.class);
+    SupportFragmentTestUtil.startFragment(f, BaseActivity.class);
     assertNotNull(f);
     assertNotNull(f.adapter);
 

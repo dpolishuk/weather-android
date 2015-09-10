@@ -7,7 +7,7 @@ import io.dp.weather.app.WeatherApplication;
 /**
  * Created by dp on 07/10/14.
  */
-public abstract class BaseActivity extends RxAppCompatActivity {
+public class BaseActivity extends RxAppCompatActivity {
 
   private BaseActivityComponent component;
 

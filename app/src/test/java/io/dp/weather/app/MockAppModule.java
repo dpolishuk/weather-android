@@ -29,18 +29,18 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by dp on 08/10/14.
  */
-
 @Module
-public class MockAppModule extends AppModule {
+public class MockAppModule {
+  final WeatherApplication app;
 
-  public MockAppModule(WeatherApplication application) {
-    super(application);
+  public MockAppModule(WeatherApplication app) {
+    this.app = app;
   }
 
   @Provides
   @Singleton
   public Application provideApplication() {
-    return application;
+    return app;
   }
 
   @Provides
@@ -110,18 +110,21 @@ public class MockAppModule extends AppModule {
   }
 
   @Provides
+  @Singleton
   @ConfigPrefs
   public SharedPreferences provideConfigPrefs() {
-    return PreferenceManager.getDefaultSharedPreferences(application);
+    return PreferenceManager.getDefaultSharedPreferences(app);
   }
 
   @Provides
+  @Singleton
   @CachePrefs
   public SharedPreferences provideCachePrefs() {
-    return application.getSharedPreferences("cachePrefs", Context.MODE_PRIVATE);
+    return app.getSharedPreferences("cachePrefs", Context.MODE_PRIVATE);
   }
 
   @Provides
+  @Singleton
   public DatabaseHelper provideDatabaseHelper(Application app) {
     return new DatabaseHelper(app);
   }

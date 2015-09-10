@@ -26,7 +26,7 @@ I used a lot of 3rd libraries and the main reason why I did it, just to speed up
 * retrofit - quick bootstrap of any http webservice stub
 * ormlite - quick bootstrap for database
 * otto - eventbus
-* dagger - DI
+* dagger2 - DI
 * com.etsy.android.grid - Staggered GridView for weather dashboard
 * timber - very customizable logger for android
 
@@ -37,5 +37,6 @@ Applications consists of two screens:
 
  1. main screen with weather dashboard
  2. settings activity where the user can specify Temperature Units (Celcius or Fahrenheit)
+ 3. and Debug activity to show how to override eventbus
 
 Small clarification: To refresh weathers list - just pull down (I used SwipeRefreshLayout from support library)
