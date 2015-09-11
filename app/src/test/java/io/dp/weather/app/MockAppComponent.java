@@ -9,6 +9,6 @@ import javax.inject.Singleton;
  */
 @Singleton
 @Component(modules = { MockAppModule.class })
-public interface MockAppComponent {
+public interface MockAppComponent extends AppComponent {
   void inject(WeatherFragmentTest test);
 }

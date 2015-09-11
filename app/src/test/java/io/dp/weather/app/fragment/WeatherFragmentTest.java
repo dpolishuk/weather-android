@@ -11,7 +11,7 @@ import io.dp.weather.app.Const;
 import io.dp.weather.app.MockAppComponent;
 import io.dp.weather.app.R;
 import io.dp.weather.app.TestApp;
-import io.dp.weather.app.activity.BaseActivity;
+import io.dp.weather.app.activity.MockActivity;
 import io.dp.weather.app.annotation.ConfigPrefs;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.db.table.Place;
@@ -37,11 +37,11 @@ import static org.mockito.Mockito.when;
 /**
  * Created by dp on 10/10/14.
  */
-
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class,
     application = TestApp.class,
-    manifest=Config.NONE,
+    manifest = "app/src/test/TestAndroidManifest.xml",
+    resourceDir = "../main/res",
     sdk = 21)
 public class WeatherFragmentTest {
 
@@ -62,8 +62,7 @@ public class WeatherFragmentTest {
   @Test public void testAddRemovePlaceFragment() throws Exception {
     WeatherFragment f = WeatherFragment.newInstance();
 
-    SupportFragmentTestUtil.startFragment(f, BaseActivity.class);
-    assertNotNull(f);
+    SupportFragmentTestUtil.startFragment(f, MockActivity.class);
     assertNotNull(f.adapter);
 
     final String placeName = "Shanghai";
@@ -72,7 +71,7 @@ public class WeatherFragmentTest {
     when(address.getLatitude()).thenReturn(-1.0);
     when(address.getLongitude()).thenReturn(-1.0);
 
-    List<Address> addresses = new ArrayList<Address>();
+    List<Address> addresses = new ArrayList<>();
     addresses.add(address);
 
     try {
@@ -100,8 +99,8 @@ public class WeatherFragmentTest {
 
   @Test public void testMetrics() throws Exception {
     WeatherFragment f = WeatherFragment.newInstance();
-    SupportFragmentTestUtil.startFragment(f, BaseActivity.class);
     assertNotNull(f);
+    SupportFragmentTestUtil.startFragment(f, MockActivity.class);
     assertNotNull(f.adapter);
 
     {

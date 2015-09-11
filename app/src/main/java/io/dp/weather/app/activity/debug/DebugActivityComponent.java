@@ -13,8 +13,7 @@ import io.dp.weather.app.annotation.PerActivity;
     modules = {
         ActivityModule.class, DebugBusModule.class
     }, dependencies = AppComponent.class)
-public interface DebugActivityComponent
-    extends BaseActivityComponent {
+public interface DebugActivityComponent extends BaseActivityComponent {
 
   void inject(DebugActivity debugActivity);
 }

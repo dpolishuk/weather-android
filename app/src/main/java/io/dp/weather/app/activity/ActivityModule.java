@@ -3,8 +3,8 @@ package io.dp.weather.app.activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import com.j256.ormlite.android.apptools.OpenHelperManager;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import dagger.Module;
 import dagger.Provides;
 import io.dp.weather.app.annotation.CachePrefs;
@@ -19,15 +19,15 @@ import io.dp.weather.app.db.DatabaseHelper;
 @Module
 public class ActivityModule {
 
-  private final RxAppCompatActivity activity;
+  private final FragmentActivity activity;
 
-  public ActivityModule(RxAppCompatActivity activity) {
+  public ActivityModule(FragmentActivity activity) {
     this.activity = activity;
   }
 
   @Provides
   @PerActivity
-  public RxAppCompatActivity provideActivity() {
+  public FragmentActivity provideActivity() {
     return activity;
   }
 
@@ -49,9 +49,5 @@ public class ActivityModule {
   @PerActivity
   public SharedPreferences provideCachePrefs() {
     return activity.getSharedPreferences("cachePrefs", Context.MODE_PRIVATE);
-  }
-
-  public void releaseDatabaseHelper() {
-    OpenHelperManager.releaseHelper();
   }
 }

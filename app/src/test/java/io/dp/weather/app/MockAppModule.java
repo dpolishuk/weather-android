@@ -12,6 +12,8 @@ import dagger.Module;
 import dagger.Provides;
 import io.dp.weather.app.annotation.CachePrefs;
 import io.dp.weather.app.annotation.ConfigPrefs;
+import io.dp.weather.app.annotation.IOSched;
+import io.dp.weather.app.annotation.UISched;
 import io.dp.weather.app.db.DatabaseHelper;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
@@ -22,7 +24,9 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.http.Query;
 import rx.Observable;
+import rx.Scheduler;
 import rx.Subscriber;
+import rx.schedulers.Schedulers;
 
 import static org.mockito.Mockito.mock;
 
@@ -31,9 +35,9 @@ import static org.mockito.Mockito.mock;
  */
 @Module
 public class MockAppModule {
-  final WeatherApplication app;
+  final WeatherApp app;
 
-  public MockAppModule(WeatherApplication app) {
+  public MockAppModule(WeatherApp app) {
     this.app = app;
   }
 
@@ -127,6 +131,14 @@ public class MockAppModule {
   @Singleton
   public DatabaseHelper provideDatabaseHelper(Application app) {
     return new DatabaseHelper(app);
+  }
+
+  @Provides @Singleton @IOSched public Scheduler provideIoScheduler() {
+    return Schedulers.immediate();
+  }
+
+  @Provides @Singleton @UISched public Scheduler provideUiScheduler() {
+    return Schedulers.immediate();
   }
 
   private class MockWeatherApi implements WeatherApi {

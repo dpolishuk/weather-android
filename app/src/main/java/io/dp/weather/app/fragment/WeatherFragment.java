@@ -22,7 +22,7 @@ import butterknife.InjectView;
 import com.etsy.android.grid.StaggeredGridView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle.components.ActivityLifecycleProvider;
 import io.dp.weather.app.R;
 import io.dp.weather.app.SchedulersManager;
 import io.dp.weather.app.activity.ActivityComponent;
@@ -39,11 +39,8 @@ import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.event.UpdateListEvent;
 import io.dp.weather.app.utils.Observables;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.inject.Inject;
 import rx.Observer;
-import rx.Subscription;
 
 public class WeatherFragment extends BaseFragment
     implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener,
@@ -64,8 +61,6 @@ public class WeatherFragment extends BaseFragment
   @InjectView(R.id.grid) StaggeredGridView gridView;
 
   @InjectView(R.id.swipe_layout) SwipeRefreshLayout swipeRefreshView;
-
-  List<Subscription> subscriptionList = new ArrayList<>();
 
   public static WeatherFragment newInstance() {
     return new WeatherFragment();
@@ -151,16 +146,7 @@ public class WeatherFragment extends BaseFragment
     return super.onOptionsItemSelected(item);
   }
 
-  @Override public void onDestroyView() {
-    super.onDestroyView();
-
-    for (Subscription s : subscriptionList) {
-      s.unsubscribe();
-    }
-  }
-
   @Override public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-
     try {
       return new OrmliteCursorLoader<>(getActivity(), dbHelper.getPlaceDao(), adapter.getQuery());
     } catch (SQLException e) {
@@ -172,11 +158,7 @@ public class WeatherFragment extends BaseFragment
 
   @Override public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
     adapter.changeCursor(cursor);
-    gridView.post(new Runnable() {
-      @Override public void run() {
-        gridView.setSelection(gridView.getCount() - 1);
-      }
-    });
+    gridView.post(() -> gridView.setSelection(gridView.getCount() - 1));
   }
 
   @Override public void onLoaderReset(Loader<Cursor> loader) {
@@ -207,7 +189,7 @@ public class WeatherFragment extends BaseFragment
 
   @Subscribe public void onAddPlace(AddPlaceEvent event) {
     Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace())
-        .compose(schedulersManager.applySchedulers((RxAppCompatActivity) getActivity()))
+        .compose(schedulersManager.applySchedulers((ActivityLifecycleProvider) getActivity()))
         .subscribe(WeatherFragment.this);
   }
 

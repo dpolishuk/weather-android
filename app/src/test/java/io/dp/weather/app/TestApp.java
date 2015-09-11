@@ -6,15 +6,9 @@ import org.robolectric.TestLifecycleApplication;
 /**
  * Created by deepol on 10/09/15.
  */
-public class TestApp extends WeatherApplication implements TestLifecycleApplication {
-  AppComponent component;
-
+public class TestApp extends WeatherApp implements TestLifecycleApplication {
   @Override public AppComponent createComponent() {
-    return null;
-  }
-
-  public AppComponent getComponent() {
-    return component;
+    return DaggerMockAppComponent.builder().mockAppModule(new MockAppModule(this)).build();
   }
 
   @Override public void beforeTest(Method method) {

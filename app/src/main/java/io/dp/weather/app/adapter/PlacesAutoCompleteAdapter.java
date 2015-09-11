@@ -1,11 +1,11 @@
 package io.dp.weather.app.adapter;
 
+import android.support.v4.app.FragmentActivity;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
 import io.dp.weather.app.R;
 import io.dp.weather.app.net.PlacesApi;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class PlacesAutoCompleteAdapter extends ArrayAdapter<String> implements F
   private PlacesApi placesApi;
 
   @Inject
-  public PlacesAutoCompleteAdapter(RxAppCompatActivity activity, PlacesApi placesApi) {
+  public PlacesAutoCompleteAdapter(FragmentActivity activity, PlacesApi placesApi) {
     super(activity, R.layout.item_search_list);
     this.placesApi = placesApi;
   }

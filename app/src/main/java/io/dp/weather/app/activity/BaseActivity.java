@@ -2,13 +2,13 @@ package io.dp.weather.app.activity;
 
 import android.os.Bundle;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
-import io.dp.weather.app.WeatherApplication;
+import io.dp.weather.app.WeatherApp;
 
 /**
  * Created by dp on 07/10/14.
  */
-public class BaseActivity extends RxAppCompatActivity {
-
+public class BaseActivity extends RxAppCompatActivity
+    implements HasComponent<BaseActivityComponent> {
   private BaseActivityComponent component;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -20,11 +20,11 @@ public class BaseActivity extends RxAppCompatActivity {
     return component;
   }
 
-  protected BaseActivityComponent createComponent() {
-    WeatherApplication app = (WeatherApplication) getApplication();
-    return DaggerActivityComponent.builder()
-        .appComponent(app.getComponent())
-        .activityModule(new ActivityModule(this))
-        .build();
+  @Override public BaseActivityComponent createComponent() {
+      WeatherApp app = (WeatherApp) getApplication();
+      return DaggerActivityComponent.builder()
+          .appComponent(app.getComponent())
+          .activityModule(new ActivityModule(this))
+          .build();
   }
 }

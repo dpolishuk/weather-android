@@ -6,10 +6,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dagger.Module;
 import dagger.Provides;
+import io.dp.weather.app.annotation.IOSched;
+import io.dp.weather.app.annotation.UISched;
 import io.dp.weather.app.net.PlacesApi;
 import io.dp.weather.app.net.WeatherApi;
 import javax.inject.Singleton;
 import retrofit.RestAdapter;
+import rx.Scheduler;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -19,7 +24,7 @@ import timber.log.Timber;
 
   protected final Application application;
 
-  public AppModule(WeatherApplication application) {
+  public AppModule(WeatherApp application) {
     this.application = application;
 
     Timber.plant(new Timber.DebugTree());
@@ -67,5 +72,13 @@ import timber.log.Timber;
 
   @Provides @Singleton public Gson provideGson() {
     return new GsonBuilder().create();
+  }
+
+  @Provides @Singleton @IOSched public Scheduler provideIoScheduler() {
+    return Schedulers.io();
+  }
+
+  @Provides @Singleton @UISched public Scheduler provideUiScheduler() {
+    return AndroidSchedulers.mainThread();
   }
 }

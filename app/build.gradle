@@ -19,7 +19,7 @@ android {
   defaultConfig {
     applicationId "io.dp.weather.app"
     minSdkVersion 14
-    targetSdkVersion 23
+    targetSdkVersion 21
     versionCode 1
     versionName "1.0"
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -57,8 +57,16 @@ android {
     exclude 'META-INF/services/javax.annotation.processing.Processor'
   }
 
+  sourceSets {
+    androidTest.java.srcDirs += "src/test/java"
+  }
+
   lintOptions {
     abortOnError false
+  }
+
+  testOptions {
+    unitTests.returnDefaultValues = true
   }
 }
 
@@ -96,15 +104,4 @@ dependencies {
   testCompile 'org.mockito:mockito-all:1.9.5'
   testCompile 'org.robolectric:robolectric:3.0'
   testCompile 'org.robolectric:shadows-support-v4:3.0'
-
-  androidTestApt 'com.google.dagger:dagger-compiler:2.0.1'
-  androidTestCompile 'junit:junit:4.11'
-  androidTestCompile 'org.glassfish:javax.annotation:10.0-b28'
-  androidTestCompile 'org.hamcrest:hamcrest-integration:1.1'
-  androidTestCompile 'org.hamcrest:hamcrest-core:1.1'
-  androidTestCompile 'org.hamcrest:hamcrest-library:1.1'
-  androidTestCompile 'com.squareup.retrofit:retrofit-mock:1.9.0'
-  androidTestCompile 'org.mockito:mockito-all:1.9.5'
-  androidTestCompile 'org.robolectric:robolectric:3.0'
-  androidTestCompile 'org.robolectric:shadows-support-v4:3.0'
 }

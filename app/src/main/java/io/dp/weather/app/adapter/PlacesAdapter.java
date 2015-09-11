@@ -3,6 +3,7 @@ package io.dp.weather.app.adapter;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -19,12 +20,13 @@ import butterknife.InjectView;
 import com.google.gson.Gson;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
-import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle.components.ActivityLifecycleProvider;
 import io.dp.weather.app.Const;
 import io.dp.weather.app.R;
 import io.dp.weather.app.SchedulersManager;
 import io.dp.weather.app.WeatherIconUrl;
 import io.dp.weather.app.annotation.CachePrefs;
+import io.dp.weather.app.annotation.PerActivity;
 import io.dp.weather.app.db.OrmliteCursorAdapter;
 import io.dp.weather.app.db.table.Place;
 import io.dp.weather.app.event.DeletePlaceEvent;
@@ -42,9 +44,10 @@ import rx.Subscriber;
 /**
  * Created by dp on 08/10/14.
  */
+@PerActivity
 public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
 
-  private final RxAppCompatActivity activity;
+  private final FragmentActivity activity;
   private final Gson gson;
   private final WeatherApi api;
 
@@ -61,7 +64,7 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
   private final WhiteBorderCircleTransformation transformation =
       new WhiteBorderCircleTransformation();
 
-  @Inject public PlacesAdapter(RxAppCompatActivity activity, Gson gson, WeatherApi api, Bus bus) {
+  @Inject public PlacesAdapter(FragmentActivity activity, Gson gson, WeatherApi api, Bus bus) {
     super(activity, null, null);
 
     this.activity = activity;
@@ -121,8 +124,9 @@ public class PlacesAdapter extends OrmliteCursorAdapter<Place> {
       Double lat = place.getLat();
       Double lon = place.getLon();
 
+      ActivityLifecycleProvider provider = (ActivityLifecycleProvider) activity;
       api.getForecast(lat + "," + lon, Const.FORECAST_FOR_DAYS)
-          .compose(schedulersManager.applySchedulers(activity))
+          .compose(schedulersManager.applySchedulers(provider))
           .subscribe(new ForecastCacheSubscriber(hash));
     } else {
       holder.progressView.setVisibility(View.GONE);

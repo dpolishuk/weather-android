@@ -5,7 +5,7 @@ import android.app.Application;
 /**
  * Created by dp on 07/10/14.
  */
-public class WeatherApplication extends Application {
+public class WeatherApp extends Application {
 
   private AppComponent component;
 
