@@ -40,3 +40,6 @@ Applications consists of two screens:
  3. and Debug activity to show how to override eventbus
 
 Small clarification: To refresh weathers list - just pull down (I used SwipeRefreshLayout from support library)
+
+### Unit-testing ###
+To run & debug unit-tests in IDE you need to use Android Studio 1.4
