@@ -11,6 +11,7 @@ buildscript {
 
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.neenbedankt.android-apt'
 
 android {
   compileSdkVersion 23
@@ -70,8 +71,6 @@ android {
   }
 }
 
-apply plugin: 'com.neenbedankt.android-apt'
-
 dependencies {
   compile fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -83,12 +82,13 @@ dependencies {
   apt 'com.google.dagger:dagger-compiler:2.0.1'
   compile 'com.jakewharton:butterknife:6.1.0'
   compile 'com.squareup.picasso:picasso:2.3.4'
-  compile 'io.reactivex:rxandroid:1.0.1'
+
   compile 'com.squareup:otto:1.3.6'
   compile 'com.jakewharton.timber:timber:2.4.1'
   compile 'com.etsy.android.grid:library:1.0.5'
   compile 'com.j256.ormlite:ormlite-android:4.48'
 
+  compile 'io.reactivex:rxandroid:1.0.1'
   compile 'com.trello:rxlifecycle:0.2.0'
   compile 'com.trello:rxlifecycle-components:0.2.0'
 

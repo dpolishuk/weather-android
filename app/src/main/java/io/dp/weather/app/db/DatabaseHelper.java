@@ -2,19 +2,14 @@ package io.dp.weather.app.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
-import java.sql.SQLException;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import io.dp.weather.app.BuildConfig;
 import io.dp.weather.app.R;
 import io.dp.weather.app.db.table.Place;
+import java.sql.SQLException;
 import timber.log.Timber;
 
 /**
@@ -35,6 +30,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
       new Place("New York", 40.71278, -74.00594),
       new Place("Barcelona", 41.3850, 2.1734)
   };
+
+  public DatabaseHelper(Context context, String databaseName, SQLiteDatabase.CursorFactory factory,
+      int databaseVersion) {
+    super(context, databaseName, factory, databaseVersion, R.raw.ormlite_config);
+    this.context = context;
+  }
 
   public DatabaseHelper(Context context) {
     super(context, DATABASE_NAME, null, DATABASE_VERSION, R.raw.ormlite_config);

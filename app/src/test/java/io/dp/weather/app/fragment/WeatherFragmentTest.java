@@ -4,12 +4,8 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
-import android.view.View;
-import android.widget.TextView;
 import io.dp.weather.app.BuildConfig;
-import io.dp.weather.app.Const;
 import io.dp.weather.app.MockAppComponent;
-import io.dp.weather.app.R;
 import io.dp.weather.app.TestApp;
 import io.dp.weather.app.activity.MockActivity;
 import io.dp.weather.app.annotation.ConfigPrefs;
@@ -21,12 +17,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowSQLiteConnection;
 import org.robolectric.shadows.support.v4.SupportFragmentTestUtil;
 
 import static org.junit.Assert.assertEquals;
@@ -37,13 +35,11 @@ import static org.mockito.Mockito.when;
 /**
  * Created by dp on 10/10/14.
  */
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
+@RunWith(RobolectricTestRunner.class) @Config(constants = BuildConfig.class,
     application = TestApp.class,
     manifest = "app/src/test/TestAndroidManifest.xml",
     resourceDir = "../main/res",
-    sdk = 21)
-public class WeatherFragmentTest {
+    sdk = 21) public class WeatherFragmentTest {
 
   @Inject Application app;
 
@@ -57,6 +53,10 @@ public class WeatherFragmentTest {
     TestApp app = ((TestApp) RuntimeEnvironment.application);
 
     ((MockAppComponent) app.getComponent()).inject(this);
+  }
+
+  @After public void tearDown() {
+    ShadowSQLiteConnection.reset();
   }
 
   @Test public void testAddRemovePlaceFragment() throws Exception {
@@ -95,30 +95,5 @@ public class WeatherFragmentTest {
     List<Place> placeList = databaseHelper.getPlaceDao().queryForAll();
     assertEquals(4, placeList.size());
     assertEquals(4, f.adapter.getCount());
-  }
-
-  @Test public void testMetrics() throws Exception {
-    WeatherFragment f = WeatherFragment.newInstance();
-    assertNotNull(f);
-    SupportFragmentTestUtil.startFragment(f, MockActivity.class);
-    assertNotNull(f.adapter);
-
-    {
-      prefs.edit().putBoolean(Const.USE_CELCIUS, true).commit();
-
-      View v = f.adapter.getView(0, null, null);
-      TextView degreeType = (TextView) v.findViewById(R.id.degrees_type);
-      assertNotNull(degreeType);
-      assertEquals(app.getResources().getString(R.string.celcius), degreeType.getText());
-    }
-
-    {
-      prefs.edit().putBoolean(Const.USE_CELCIUS, false).commit();
-
-      View v = f.adapter.getView(0, null, null);
-      TextView degreeType = (TextView) v.findViewById(R.id.degrees_type);
-      assertNotNull(degreeType);
-      assertEquals(app.getResources().getString(R.string.fahrenheit), degreeType.getText());
-    }
   }
 }

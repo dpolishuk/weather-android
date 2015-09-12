@@ -39,12 +39,17 @@ import io.dp.weather.app.event.DeletePlaceEvent;
 import io.dp.weather.app.event.UpdateListEvent;
 import io.dp.weather.app.utils.Observables;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import rx.Observer;
+import rx.Subscription;
 
 public class WeatherFragment extends BaseFragment
     implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener,
     Observer<Place> {
+
+  List<Subscription> subscriptionList = new ArrayList<Subscription>();
 
   @Inject Geocoder geocoder;
 
@@ -116,8 +121,8 @@ public class WeatherFragment extends BaseFragment
       @Override public boolean onMenuItemActionExpand(MenuItem item) {
         addView.post(() -> {
           addView.requestFocus();
-          InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
-              Context.INPUT_METHOD_SERVICE);
+          InputMethodManager imm =
+              (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
           imm.showSoftInput(addView, InputMethodManager.SHOW_IMPLICIT);
         });
         return true;
@@ -144,6 +149,15 @@ public class WeatherFragment extends BaseFragment
         return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+
+    for (Subscription s : subscriptionList) {
+      s.unsubscribe();
+    }
   }
 
   @Override public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -188,9 +202,11 @@ public class WeatherFragment extends BaseFragment
   }
 
   @Subscribe public void onAddPlace(AddPlaceEvent event) {
-    Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace())
+    Subscription s = Observables.getGeoForPlace(getActivity(), dbHelper, geocoder, event.getLookupPlace())
         .compose(schedulersManager.applySchedulers((ActivityLifecycleProvider) getActivity()))
         .subscribe(WeatherFragment.this);
+
+    subscriptionList.add(s);
   }
 
   @Override public void onCompleted() {
