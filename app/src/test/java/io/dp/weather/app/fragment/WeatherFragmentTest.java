@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.when;
 /**
  * Created by dp on 10/10/14.
  */
-@RunWith(RobolectricTestRunner.class) @Config(constants = BuildConfig.class,
+@RunWith(RobolectricGradleTestRunner.class) @Config(constants = BuildConfig.class,
     application = TestApp.class,
     manifest = "app/src/test/TestAndroidManifest.xml",
     resourceDir = "../main/res",

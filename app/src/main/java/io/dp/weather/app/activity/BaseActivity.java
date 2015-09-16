@@ -2,6 +2,7 @@ package io.dp.weather.app.activity;
 
 import android.os.Bundle;
 import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+import io.dp.weather.app.BusModule;
 import io.dp.weather.app.WeatherApp;
 
 /**
@@ -22,9 +23,11 @@ public class BaseActivity extends RxAppCompatActivity
 
   @Override public BaseActivityComponent createComponent() {
       WeatherApp app = (WeatherApp) getApplication();
-      return DaggerActivityComponent.builder()
+      ActivityComponent component = DaggerActivityComponent.builder()
           .appComponent(app.getComponent())
           .activityModule(new ActivityModule(this))
           .build();
+
+      return component.plus(new BusModule());
   }
 }

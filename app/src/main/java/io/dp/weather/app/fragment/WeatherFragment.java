@@ -23,6 +23,7 @@ import com.etsy.android.grid.StaggeredGridView;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import com.trello.rxlifecycle.components.ActivityLifecycleProvider;
+import io.dp.weather.app.BusSubcomponent;
 import io.dp.weather.app.R;
 import io.dp.weather.app.SchedulersManager;
 import io.dp.weather.app.activity.ActivityComponent;
@@ -85,7 +86,7 @@ public class WeatherFragment extends BaseFragment
   @Override public void onActivityCreated(Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
 
-    ((ActivityComponent) getComponent()).inject(this);
+    ((BusSubcomponent) getComponent()).inject(this);
 
     setRetainInstance(true);
 
